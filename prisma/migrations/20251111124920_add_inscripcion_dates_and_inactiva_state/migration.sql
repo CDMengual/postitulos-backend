@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `cohorte` ADD COLUMN `fechaFinInscripcion` DATETIME(3) NULL,
+    ADD COLUMN `fechaInicioInscripcion` DATETIME(3) NULL,
+    MODIFY `estado` ENUM('INSCRIPCION', 'ACTIVA', 'INACTIVA', 'FINALIZADA', 'CANCELADA') NOT NULL DEFAULT 'INACTIVA';

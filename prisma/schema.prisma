@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Region {
+  id        Int        @id
+  distritos Distrito[]
+}
+
+model Distrito {
+  id         Int         @id @default(autoincrement())
+  nombre     String      @unique
+  regionId   Int
+  region     Region      @relation(fields: [regionId], references: [id])
+  institutos Instituto[]
+}
+
+model Instituto {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  distritoId Int
+  distrito   Distrito @relation(fields: [distritoId], references: [id])
+  usuarios   User[]
+  aulas      Aula[]
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  apellido    String
+  dni         String     @unique
+  email       String     @unique
+  celular     String?
+  rol         Rol        @default(REFERENTE)
+  password    String
+  institutoId Int?
+  instituto   Instituto? @relation(fields: [institutoId], references: [id])
+
+  aulasAdmin       Aula[] @relation("AdminAulas")
+  aulasCoordinador Aula[] @relation("CoordinadorAulas")
+  aulasReferente   Aula[] @relation("ReferenteAulas")
+  aulasFormador    Aula[] @relation("FormadorAulas")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Postitulo {
+  id                Int      @id @default(autoincrement())
+  nombre            String
+  codigo            String?  @unique @default("TEMP") // Ejemplo: "EA"
+  destinatarios     String?  @db.Text
+  descripcion       String?  @db.Text
+  autores           String?  @db.Text
+  coordinadores     String?  @db.Text
+  resolucion        String?
+  planEstudios      String?  @db.Text
+  resolucionPuntaje String?
+  dictamen          String?
+  modalidad         String?
+  cargaHoraria      Int?
+  horasSincronicas  Int?
+  horasVirtuales    Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tipos       PostituloTipo[]
+  cohortes    Cohorte[]
+  formularios Formulario[]
+}
+
+model PostituloTipo {
+  id          Int           @id @default(autoincrement())
+  tipo        TipoPostitulo
+  titulo      String
+  postituloId Int
+  postitulo   Postitulo     @relation(fields: [postituloId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Aula {
+  id     Int    @id @default(autoincrement())
+  numero Int
+  nombre String
+  codigo String @unique
+
+  cohorteId Int
+  cohorte   Cohorte @relation(fields: [cohorteId], references: [id])
+
+  institutoId Int
+  instituto   Instituto @relation(fields: [institutoId], references: [id])
+
+  admins        User[] @relation("AdminAulas")
+  coordinadores User[] @relation("CoordinadorAulas")
+  referentes    User[] @relation("ReferenteAulas")
+  formadores    User[] @relation("FormadorAulas")
+
+  cursantes CursanteAula[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cursante {
+  id       Int     @id @default(autoincrement())
+  nombre   String
+  apellido String
+  dni      String  @unique
+  email    String?
+  celular  String?
+  titulo   String?
+
+  inscripciones CursanteAula[] // relación explícita
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CursanteAula {
+  id         Int @id @default(autoincrement())
+  cursanteId Int
+  aulaId     Int
+
+  cursante Cursante @relation(fields: [cursanteId], references: [id], onDelete: Cascade)
+  aula     Aula     @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+
+  estado        EstadoCursante @default(ACTIVO)
+  documentacion Documentacion  @default(PENDIENTE)
+  observaciones String?        @db.Text
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([cursanteId, aulaId])
+}
+
+model Cohorte {
+  id                     Int           @id @default(autoincrement())
+  anio                   Int
+  nombre                 String?
+  fechaInicio            DateTime
+  fechaFin               DateTime?
+  estado                 EstadoCohorte @default(INACTIVA)
+  fechaInicioInscripcion DateTime?
+  fechaFinInscripcion    DateTime?
+  postituloId            Int
+  postitulo              Postitulo     @relation(fields: [postituloId], references: [id])
+  formularioId           Int?
+  formulario             Formulario?   @relation(fields: [formularioId], references: [id])
+  cantidadAulas          Int?
+  aulas                  Aula[]
+
+  cupos            Int? // ej. 100
+  cuposListaEspera Int? // ej. 30
+  cuposTotales     Int? // total (ej. 130)
+
+  inscriptos Inscripto[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Inscripto {
+  id        Int     @id @default(autoincrement())
+  cohorteId Int
+  cohorte   Cohorte @relation(fields: [cohorteId], references: [id])
+
+  nombre   String
+  apellido String
+  dni      String
+  email    String?
+  celular  String?
+
+  datosFormulario  Json? // todas las respuestas del formulario dinámico
+  dniAdjuntoUrl    String?  // Archivo DNI (PDF o JPG)
+  tituloAdjuntoUrl String?  // Título docente (PDF o JPG)
+
+  estado        EstadoInscripto @default(PENDIENTE)
+  prioridad     Int? // ranking según criterios del postítulo
+  listaEspera   Boolean         @default(false)
+  condicionada  Boolean         @default(false) // confirmación condicional
+  observaciones String?         @db.Text
+  documentacion Documentacion   @default(PENDIENTE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cohorteId, dni]) // evita duplicados en la misma cohorte
+}
+
+model Formulario {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  campos      Json // estructura de campos (preguntas, opciones, etc.)
+  postituloId Int?
+  postitulo   Postitulo? @relation(fields: [postituloId], references: [id])
+  cohortes    Cohorte[] // cohortes que lo usan
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum Rol {
+  ADMIN
+  REFERENTE
+  FORMADOR
+  COORDINADOR
+}
+
+enum TipoPostitulo {
+  ESPECIALIZACION
+  DIPLOMATURA
+  ACTUALIZACION
+}
+
+enum EstadoCursante {
+  ACTIVO
+  ADEUDA
+  BAJA
+}
+
+enum Documentacion {
+  VERIFICADA
+  PENDIENTE
+  NO_CORRESPONDE
+}
+
+enum EstadoCohorte {
+  INSCRIPCION
+  ACTIVA
+  INACTIVA
+  FINALIZADA
+  CANCELADA
+}
+
+enum EstadoInscripto {
+  PENDIENTE
+  RECHAZADA
+  ASIGNADA
+  LISTA_ESPERA
+}
