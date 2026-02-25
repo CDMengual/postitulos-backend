@@ -27,6 +27,9 @@ export const formularioService = {
         },
         cohortes: {
           select: {
+            id: true,
+            nombre: true,
+            estado: true,
             fechaInicioInscripcion: true,
             fechaFinInscripcion: true,
             cupos: true,
@@ -61,6 +64,9 @@ export const formularioService = {
         },
         cohortes: {
           select: {
+            id: true,
+            nombre: true,
+            estado: true,
             fechaInicioInscripcion: true,
             fechaFinInscripcion: true,
             cupos: true,
