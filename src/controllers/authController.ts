@@ -57,3 +57,19 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     return sendError(res, 'Error al obtener usuario autenticado', 500)
   }
 }
+
+// --- CHANGE PASSWORD (perfil) ---
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id
+    if (!userId) return sendError(res, 'No autorizado', 401)
+
+    const { currentPassword, newPassword } = req.body || {}
+
+    await authService.changePassword(userId, currentPassword, newPassword)
+
+    return sendSuccess(res, 'Contrasena actualizada correctamente')
+  } catch (err: any) {
+    return sendError(res, err.message || 'Error al actualizar contrasena', err.status || 500)
+  }
+}

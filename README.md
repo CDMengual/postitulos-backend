@@ -196,6 +196,7 @@ Base URL local: `http://localhost:4000`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me` (requiere cookie valida)
+- `PATCH /api/auth/change-password` (requiere cookie valida)
 
 ### Users (`/api/users`) - protegidos
 
@@ -288,6 +289,16 @@ Resumen por modulo (campo `data`):
 - `POST /api/auth/login`: `{ user }` (sin password). Ademas setea cookie `auth_token`.
 - `POST /api/auth/logout`: `data: null` (limpia cookie).
 - `GET /api/auth/me`: usuario autenticado con su `instituto`, `distrito` y `region`.
+- `PATCH /api/auth/change-password`: `data: null`. Valida contrasena actual y actualiza password hasheada.
+
+Body esperado para cambio de contrasena:
+
+```json
+{
+  "currentPassword": "actual123",
+  "newPassword": "nueva12345"
+}
+```
 
 ### Users
 
