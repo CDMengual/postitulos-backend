@@ -52,20 +52,58 @@ export const cursanteController = {
     }
   },
 
-  // ---------- 🔹 OPERACIONES DE INSCRIPCIÓN 🔹 ----------
+  async createStandalone(req: Request, res: Response) {
+    try {
+      const { nombre, apellido, dni, email, celular, titulo } = req.body
+      const aulaRaw = req.body?.aulaId ?? req.body?.aula
+
+      if (!nombre || !apellido || !dni) {
+        return sendError(res, 'Debe enviar nombre, apellido y dni', 400)
+      }
+
+      const existing = await cursanteService.getByDni(String(dni))
+      if (existing) return sendError(res, 'Ya existe un cursante con ese DNI', 400)
+
+      const cursante = await cursanteService.create({
+        nombre,
+        apellido,
+        dni: String(dni),
+        email: email || null,
+        celular: celular || null,
+        titulo: titulo || null,
+      })
+
+      if (aulaRaw !== undefined && aulaRaw !== null && String(aulaRaw).trim() !== '') {
+        const aulaId = Number(aulaRaw)
+        if (isNaN(aulaId)) return sendError(res, 'aulaId invalido', 400)
+        await inscripcionService.assignExistingCursanteToAula(cursante.id, aulaId)
+      }
+
+      const withInscripciones = await cursanteService.getById(cursante.id)
+      return sendSuccess(res, 'Cursante creado correctamente', withInscripciones, null, 201)
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al crear cursante', 500)
+    }
+  },
 
   async create(req: Request, res: Response) {
     try {
-      const { nombre, apellido, dni, email, celular, titulo, aulaId } = req.body
-      if (!dni || !aulaId) {
+      const { nombre, apellido, dni, email, celular, titulo } = req.body
+      const aulaRaw = req.params.aulaId ?? req.body?.aulaId ?? req.body?.aula
+      const aulaId = Number(aulaRaw)
+
+      if (isNaN(aulaId)) {
+        return sendError(res, 'Debe enviar un aulaId valido', 400)
+      }
+
+      if (!dni) {
         return sendError(res, 'Debe enviar al menos DNI y aulaId', 400)
       }
 
-      // 🔹 Ver si el cursante ya existe
-      let cursante = await cursanteService.getByDni(dni)
+      let cursante = await cursanteService.getByDni(String(dni))
 
       if (!cursante) {
-        // Si no existe, crear uno nuevo (requiere nombre y apellido)
         if (!nombre || !apellido) {
           return sendError(res, 'Faltan nombre y apellido para crear cursante nuevo', 400)
         }
@@ -73,16 +111,15 @@ export const cursanteController = {
         cursante = await cursanteService.create({
           nombre,
           apellido,
-          dni,
-          email,
-          celular,
-          titulo,
+          dni: String(dni),
+          email: email || null,
+          celular: celular || null,
+          titulo: titulo || null,
         })
       }
 
-      // 🔹 Inscribir al cursante (usa inscripcionService)
       const inscripto = await inscripcionService.inscribirCursante({
-        aulaId: Number(aulaId),
+        aulaId,
         dni: cursante.dni,
         nombre: cursante.nombre,
         apellido: cursante.apellido,
@@ -95,6 +132,32 @@ export const cursanteController = {
     } catch (error) {
       console.error(error)
       return sendError(res, 'Error al crear cursante', 500)
+    }
+  },
+
+  async assignToAula(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id)
+      const aulaRaw = req.body?.aulaId ?? req.body?.aula
+      const aulaId = Number(aulaRaw)
+
+      if (isNaN(id)) return sendError(res, 'ID de cursante invalido', 400)
+      if (isNaN(aulaId)) return sendError(res, 'Debe enviar un aulaId valido', 400)
+
+      const cursante = await cursanteService.getById(id)
+      if (!cursante) return sendError(res, 'Cursante no encontrado', 404)
+
+      const result = await inscripcionService.assignExistingCursanteToAula(id, aulaId)
+      const updated = await cursanteService.getById(id)
+
+      if (!result.created) {
+        return sendSuccess(res, 'El cursante ya estaba asignado a esa aula', updated)
+      }
+
+      return sendSuccess(res, 'Cursante asignado al aula correctamente', updated, null, 201)
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al asignar cursante al aula', 500)
     }
   },
 
@@ -114,7 +177,7 @@ export const cursanteController = {
     try {
       const aulaId = Number(req.params.aulaId)
       const file = req.file
-      if (!file) return sendError(res, 'No se adjuntó archivo', 400)
+      if (!file) return sendError(res, 'No se adjunto archivo', 400)
       const workbook = XLSX.read(file.buffer, { type: 'buffer' })
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' })
@@ -149,10 +212,10 @@ export const cursanteController = {
         aulaId,
         documentacion,
       )
-      return sendSuccess(res, 'Documentación actualizada correctamente', updated)
+      return sendSuccess(res, 'Documentacion actualizada correctamente', updated)
     } catch (error) {
       console.error(error)
-      return sendError(res, 'Error al actualizar documentación', 500)
+      return sendError(res, 'Error al actualizar documentacion', 500)
     }
   },
 }

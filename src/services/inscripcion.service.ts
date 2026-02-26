@@ -45,6 +45,22 @@ export const inscripcionService = {
     })
   },
 
+  async assignExistingCursanteToAula(cursanteId: number, aulaId: number) {
+    const yaInscripto = await prisma.cursanteAula.findUnique({
+      where: { cursanteId_aulaId: { cursanteId, aulaId } },
+    })
+
+    if (yaInscripto) {
+      return { created: false, inscripcion: yaInscripto }
+    }
+
+    const inscripcion = await prisma.cursanteAula.create({
+      data: { cursanteId, aulaId, estado: 'ACTIVO', documentacion: 'PENDIENTE' },
+    })
+
+    return { created: true, inscripcion }
+  },
+
   async importMany(aulaId: number, rows: any[]) {
     const importados: any[] = []
     const duplicados: any[] = []
