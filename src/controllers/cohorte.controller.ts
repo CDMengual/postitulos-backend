@@ -1,10 +1,9 @@
-import { Request, Response } from 'express'
+﻿import { Request, Response } from 'express'
 import { cohorteService } from '../services/cohorte.service'
 import { sendSuccess, sendError } from '../utils/response'
 import prisma from '../prisma/client'
 
 export const cohorteController = {
-  // 🔹 GET /api/cohortes
   async getAll(req: Request, res: Response) {
     try {
       const cohortes = await cohorteService.getAll()
@@ -17,7 +16,6 @@ export const cohorteController = {
     }
   },
 
-  // 🔹 GET /api/cohortes/:id
   async getById(req: Request, res: Response) {
     try {
       const id = Number(req.params.id)
@@ -30,41 +28,90 @@ export const cohorteController = {
     }
   },
 
-  // 🔹 POST /api/cohortes
   async create(req: Request, res: Response) {
     try {
-      const { anio, fechaInicio, fechaFin, postituloId, cantidadAulas, cupos, cuposListaEspera } =
-        req.body
+      const {
+        anio,
+        fechaInicio,
+        fechaFin,
+        fechaInicioInscripcion,
+        fechaFinInscripcion,
+        postituloId,
+        cantidadAulas,
+        cupos,
+        cuposListaEspera,
+      } = req.body
 
-      if (!anio || !fechaInicio || !postituloId) {
-        return sendError(res, 'Faltan campos obligatorios', 400)
+      const isEmpty = (value: any) =>
+        value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+
+      if (
+        isEmpty(anio) ||
+        isEmpty(postituloId) ||
+        isEmpty(cupos) ||
+        isEmpty(cuposListaEspera)
+      ) {
+        return sendError(
+          res,
+          'Campos obligatorios: anio, postituloId, cupos, cuposListaEspera',
+          400,
+        )
       }
 
-      // Buscar el postítulo para obtener su código
+      const parseDate = (value: any, field: string) => {
+        const parsed = new Date(value)
+        if (isNaN(parsed.getTime())) throw new Error(`Fecha invalida en ${field}`)
+        return parsed
+      }
+
+      const toPositiveInt = (value: any, field: string) => {
+        const parsed = Number(value)
+        if (!Number.isInteger(parsed) || parsed <= 0) {
+          throw new Error(`El campo ${field} debe ser un numero entero mayor a 0`)
+        }
+        return parsed
+      }
+
+      const anioNum = toPositiveInt(anio, 'anio')
+      const postituloIdNum = toPositiveInt(postituloId, 'postituloId')
+      const cuposNum = toPositiveInt(cupos, 'cupos')
+      const cuposListaEsperaNum = toPositiveInt(cuposListaEspera, 'cuposListaEspera')
+
+      const cantidadAulasNum = isEmpty(cantidadAulas)
+        ? null
+        : toPositiveInt(cantidadAulas, 'cantidadAulas')
+
+      const fechaInicioDate = isEmpty(fechaInicio) ? null : parseDate(fechaInicio, 'fechaInicio')
+      const fechaFinDate = isEmpty(fechaFin) ? null : parseDate(fechaFin, 'fechaFin')
+      const fechaInicioInscripcionDate = isEmpty(fechaInicioInscripcion)
+        ? null
+        : parseDate(fechaInicioInscripcion, 'fechaInicioInscripcion')
+      const fechaFinInscripcionDate = isEmpty(fechaFinInscripcion)
+        ? null
+        : parseDate(fechaFinInscripcion, 'fechaFinInscripcion')
+
       const postitulo = await prisma.postitulo.findUnique({
-        where: { id: Number(postituloId) },
+        where: { id: postituloIdNum },
         select: { id: true, codigo: true, nombre: true },
       })
 
-      if (!postitulo) return sendError(res, 'Postítulo no encontrado', 404)
+      if (!postitulo) return sendError(res, 'Postitulo no encontrado', 404)
+      if (!postitulo.codigo) return sendError(res, 'El postitulo no tiene codigo asignado', 400)
 
-      if (!postitulo.codigo) return sendError(res, 'El postítulo no tiene código asignado', 400)
+      const nombreGenerado = `${postitulo.codigo}-${anioNum}`
 
-      // ✅ Generar nombre automático (SIGLA-AÑO)
-      const nombreGenerado = `${postitulo.codigo}-${anio}`
-
-      // ✅ Crear cohorte
       const cohorte = await cohorteService.create({
-        anio: Number(anio),
+        anio: anioNum,
         nombre: nombreGenerado,
-        fechaInicio: new Date(fechaInicio),
-        fechaFin: fechaFin ? new Date(fechaFin) : null,
-        postituloId: Number(postituloId),
-        cantidadAulas: cantidadAulas ? Number(cantidadAulas) : null,
-        cupos: cupos ? Number(cupos) : null,
-        cuposListaEspera: cuposListaEspera ? Number(cuposListaEspera) : null,
-        cuposTotales:
-          (cupos ? Number(cupos) : 0) + (cuposListaEspera ? Number(cuposListaEspera) : 0),
+        fechaInicio: fechaInicioDate,
+        fechaFin: fechaFinDate,
+        fechaInicioInscripcion: fechaInicioInscripcionDate,
+        fechaFinInscripcion: fechaFinInscripcionDate,
+        postituloId: postituloIdNum,
+        cantidadAulas: cantidadAulasNum,
+        cupos: cuposNum,
+        cuposListaEspera: cuposListaEsperaNum,
+        cuposTotales: cuposNum + cuposListaEsperaNum,
         ...(req.body.formularioId && {
           formulario: { connect: { id: Number(req.body.formularioId) } },
         }),
@@ -82,7 +129,6 @@ export const cohorteController = {
       const id = Number(req.params.id)
       const data = req.body
 
-      // 🔹 Buscar cohorte actual
       const cohorteActual = await prisma.cohorte.findUnique({
         where: { id },
         include: { postitulo: true },
@@ -91,7 +137,6 @@ export const cohorteController = {
 
       let nombre = cohorteActual.nombre
 
-      // ✅ Si cambió el año o postítulo, regenerar el nombre
       if (data.anio || data.postituloId) {
         const postitulo = await prisma.postitulo.findUnique({
           where: { id: Number(data.postituloId || cohorteActual.postituloId) },
@@ -101,7 +146,6 @@ export const cohorteController = {
         nombre = `${codigo}-${data.anio || cohorteActual.anio}`
       }
 
-      // ✅ Convertir fechas y limpiar vacíos
       const parsedData = {
         ...data,
         fechaInicio: data.fechaInicio ? new Date(data.fechaInicio) : null,
@@ -112,7 +156,6 @@ export const cohorteController = {
         fechaFinInscripcion: data.fechaFinInscripcion ? new Date(data.fechaFinInscripcion) : null,
       }
 
-      // ✅ Actualizar cohorte
       const cohorte = await cohorteService.update(id, {
         ...parsedData,
         nombre,
@@ -128,7 +171,6 @@ export const cohorteController = {
     }
   },
 
-  // 🔹 DELETE /api/cohortes/:id
   async remove(req: Request, res: Response) {
     try {
       const id = Number(req.params.id)
@@ -139,6 +181,7 @@ export const cohorteController = {
       return sendError(res, error.message || 'Error al eliminar cohorte', 400)
     }
   },
+
   async updateEstado(req: Request, res: Response) {
     try {
       const id = Number(req.params.id)
