@@ -27,6 +27,8 @@ model Instituto {
   distrito   Distrito @relation(fields: [distritoId], references: [id])
   usuarios   User[]
   aulas      Aula[]
+  inscriptos Inscripto[]
+  cohorteInstitutos CohorteInstituto[]
 }
 
 model User {
@@ -160,15 +162,28 @@ model Cohorte {
   cuposTotales     Int? // total (ej. 130)
 
   inscriptos Inscripto[]
+  cohorteInstitutos CohorteInstituto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CohorteInstituto {
+  cohorteId Int
+  institutoId Int
+  cohorte   Cohorte   @relation(fields: [cohorteId], references: [id], onDelete: Cascade)
+  instituto Instituto @relation(fields: [institutoId], references: [id], onDelete: Cascade)
+
+  @@id([cohorteId, institutoId])
+  @@index([institutoId])
 }
 
 model Inscripto {
   id        Int     @id @default(autoincrement())
   cohorteId Int
   cohorte   Cohorte @relation(fields: [cohorteId], references: [id])
+  institutoId Int?
+  instituto   Instituto? @relation(fields: [institutoId], references: [id])
 
   nombre   String
   apellido String

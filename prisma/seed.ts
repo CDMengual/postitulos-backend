@@ -56,12 +56,6 @@ async function main() {
           required: true,
         },
         {
-          id: 'ejercicio_cargo_actual',
-          label: '¿Se encuentra ejerciendo algún cargo actualmente?',
-          type: 'boolean',
-          required: true,
-        },
-        {
           id: 'nivel_desempenio',
           label:
             '¿En qué nivel se desempeña? (Seleccione el nivel en el cual posea mayor carga horaria)',
@@ -70,9 +64,16 @@ async function main() {
         },
         {
           id: 'requisitos_prioritarios',
-          label: '¿Cumple alguno de los requisitos prioritarios?',
-          type: 'boolean',
+          label: 'Seleccione uno o más requisitos prioritarios que cumple:',
+          type: 'select',
+          multiple: true,
           required: true,
+          options: [
+            'Ser docente de nivel secundario que se desempeñe o pueda desempeñarse en las áreas de Ciencias Sociales, Comunicación y Cultura, Formación Ciudadana, Prácticas del Lenguaje y Educación Artística.',
+            'Ser docente de nivel superior de las áreas de Ciencias Sociales, Comunicación y Cultura, Formación Ciudadana, Prácticas del Lenguaje y Educación Artística.',
+            'Estar en ejercicio al momento de la inscripción.',
+            'Poseer entre 0 y 5 años de antigüedad en la docencia.',
+          ],
         },
       ],
     },

@@ -30,6 +30,17 @@ export const cohorteService = {
         formulario: {
           select: { id: true, nombre: true },
         },
+        cohorteInstitutos: {
+          select: {
+            instituto: {
+              select: {
+                id: true,
+                nombre: true,
+                distritoId: true,
+              },
+            },
+          },
+        },
         aulas: {
           select: {
             _count: { select: { cursantes: true } },
@@ -40,12 +51,13 @@ export const cohorteService = {
     })
 
     return cohortes.map((cohorte) => {
-      const { aulas, ...cohorteBase } = cohorte
+      const { aulas, cohorteInstitutos, ...cohorteBase } = cohorte
       const cantidadAulas = cohorte.cantidadAulas ?? cohorte.aulas.length
       const cantidadCursantes = cohorte.aulas.reduce((acc, aula) => acc + aula._count.cursantes, 0)
 
       return {
         ...cohorteBase,
+        institutos: cohorteInstitutos.map((ci) => ci.instituto),
         cantidadAulas,
         cantidadCursantes,
       }
@@ -74,6 +86,17 @@ export const cohorteService = {
         updatedAt: true,
         postitulo: { select: { id: true, nombre: true, codigo: true } },
         formulario: { select: { id: true, nombre: true } },
+        cohorteInstitutos: {
+          select: {
+            instituto: {
+              select: {
+                id: true,
+                nombre: true,
+                distritoId: true,
+              },
+            },
+          },
+        },
         aulas: {
           select: {
             _count: { select: { cursantes: true } },
@@ -85,23 +108,32 @@ export const cohorteService = {
     if (!cohorte) return null
 
     const cantidadCursantes = cohorte.aulas.reduce((acc, aula) => acc + aula._count.cursantes, 0)
-    const { aulas, ...cohorteBase } = cohorte
+    const { aulas, cohorteInstitutos, ...cohorteBase } = cohorte
 
     return {
       ...cohorteBase,
+      institutos: cohorteInstitutos.map((ci) => ci.instituto),
       cantidadAulas: cohorte.cantidadAulas ?? cohorte.aulas.length,
       cantidadCursantes,
     }
   },
 
   async create(data: any) {
-    const { postituloId, formularioId, ...rest } = data
+    const { postituloId, formularioId, institutoIds, ...rest } = data
 
     return prisma.cohorte.create({
       data: {
         ...rest,
         postitulo: { connect: { id: Number(postituloId) } },
         ...(formularioId && { formularioId: Number(formularioId) }),
+        ...(Array.isArray(institutoIds) &&
+          institutoIds.length > 0 && {
+            cohorteInstitutos: {
+              create: institutoIds.map((institutoId: number) => ({
+                instituto: { connect: { id: institutoId } },
+              })),
+            },
+          }),
       },
       include: {
         postitulo: {
@@ -110,13 +142,20 @@ export const cohorteService = {
         formulario: {
           select: { id: true, nombre: true },
         },
+        cohorteInstitutos: {
+          select: {
+            instituto: {
+              select: { id: true, nombre: true, distritoId: true },
+            },
+          },
+        },
         aulas: true,
       },
     })
   },
 
   async update(id: number, data: any) {
-    const { postituloId, formularioId, ...rest } = data
+    const { postituloId, formularioId, institutoIds, ...rest } = data
 
     return prisma.cohorte.update({
       where: { id },
@@ -128,6 +167,18 @@ export const cohorteService = {
         ...(formularioId && {
           formulario: { connect: { id: Number(formularioId) } },
         }),
+        ...(Array.isArray(institutoIds) && {
+          cohorteInstitutos: {
+            deleteMany: {},
+            ...(institutoIds.length > 0
+              ? {
+                  create: institutoIds.map((institutoId: number) => ({
+                    instituto: { connect: { id: institutoId } },
+                  })),
+                }
+              : {}),
+          },
+        }),
       },
       include: {
         postitulo: {
@@ -135,6 +186,13 @@ export const cohorteService = {
         },
         formulario: {
           select: { id: true, nombre: true },
+        },
+        cohorteInstitutos: {
+          select: {
+            instituto: {
+              select: { id: true, nombre: true, distritoId: true },
+            },
+          },
         },
         aulas: true,
       },

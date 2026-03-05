@@ -40,6 +40,7 @@ export const cohorteController = {
         cantidadAulas,
         cupos,
         cuposListaEspera,
+        institutoIds,
       } = req.body
 
       const isEmpty = (value: any) =>
@@ -81,6 +82,24 @@ export const cohorteController = {
         ? null
         : toPositiveInt(cantidadAulas, 'cantidadAulas')
 
+      const institutoIdsNormalizados =
+        institutoIds === undefined
+          ? undefined
+          : Array.isArray(institutoIds)
+            ? institutoIds.map((id: any) => Number(id)).filter((id: number) => Number.isInteger(id))
+            : (() => {
+                throw new Error('El campo institutoIds debe ser un array de IDs')
+              })()
+
+      if (institutoIdsNormalizados && institutoIdsNormalizados.length > 0) {
+        const institutosCount = await prisma.instituto.count({
+          where: { id: { in: institutoIdsNormalizados } },
+        })
+        if (institutosCount !== institutoIdsNormalizados.length) {
+          return sendError(res, 'Uno o más institutos no existen', 404)
+        }
+      }
+
       const fechaInicioDate = isEmpty(fechaInicio) ? null : parseDate(fechaInicio, 'fechaInicio')
       const fechaFinDate = isEmpty(fechaFin) ? null : parseDate(fechaFin, 'fechaFin')
       const fechaInicioInscripcionDate = isEmpty(fechaInicioInscripcion)
@@ -112,6 +131,7 @@ export const cohorteController = {
         cupos: cuposNum,
         cuposListaEspera: cuposListaEsperaNum,
         cuposTotales: cuposNum + cuposListaEsperaNum,
+        ...(institutoIdsNormalizados !== undefined && { institutoIds: institutoIdsNormalizados }),
         ...(req.body.formularioId && {
           formulario: { connect: { id: Number(req.body.formularioId) } },
         }),
@@ -146,14 +166,85 @@ export const cohorteController = {
         nombre = `${codigo}-${data.anio || cohorteActual.anio}`
       }
 
+      const isEmpty = (value: any) =>
+        value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+
+      const toPositiveInt = (value: any, field: string) => {
+        const parsed = Number(value)
+        if (!Number.isInteger(parsed) || parsed <= 0) {
+          throw new Error(`El campo ${field} debe ser un numero entero mayor a 0`)
+        }
+        return parsed
+      }
+
+      const parseDate = (value: any, field: string) => {
+        if (isEmpty(value)) return null
+        const parsed = new Date(value)
+        if (isNaN(parsed.getTime())) throw new Error(`Fecha invalida en ${field}`)
+        return parsed
+      }
+
+      const cuposNormalizados =
+        data.cupos === undefined ? undefined : toPositiveInt(data.cupos, 'cupos')
+      const cuposListaEsperaNormalizados =
+        data.cuposListaEspera === undefined
+          ? undefined
+          : toPositiveInt(data.cuposListaEspera, 'cuposListaEspera')
+
+      const institutoIdsNormalizados =
+        data.institutoIds === undefined
+          ? undefined
+          : Array.isArray(data.institutoIds)
+            ? data.institutoIds
+                .map((value: any) => Number(value))
+                .filter((value: number) => Number.isInteger(value))
+            : (() => {
+                throw new Error('El campo institutoIds debe ser un array de IDs')
+              })()
+
+      if (institutoIdsNormalizados && institutoIdsNormalizados.length > 0) {
+        const institutosCount = await prisma.instituto.count({
+          where: { id: { in: institutoIdsNormalizados } },
+        })
+        if (institutosCount !== institutoIdsNormalizados.length) {
+          return sendError(res, 'Uno o más institutos no existen', 404)
+        }
+      }
+
+      const cuposFinales = cuposNormalizados ?? cohorteActual.cupos ?? 0
+      const cuposListaEsperaFinales =
+        cuposListaEsperaNormalizados ?? cohorteActual.cuposListaEspera ?? 0
+
       const parsedData = {
         ...data,
-        fechaInicio: data.fechaInicio ? new Date(data.fechaInicio) : null,
-        fechaFin: data.fechaFin ? new Date(data.fechaFin) : null,
-        fechaInicioInscripcion: data.fechaInicioInscripcion
-          ? new Date(data.fechaInicioInscripcion)
-          : null,
-        fechaFinInscripcion: data.fechaFinInscripcion ? new Date(data.fechaFinInscripcion) : null,
+        ...(data.anio !== undefined && { anio: toPositiveInt(data.anio, 'anio') }),
+        ...(data.cantidadAulas !== undefined && {
+          cantidadAulas: isEmpty(data.cantidadAulas)
+            ? null
+            : toPositiveInt(data.cantidadAulas, 'cantidadAulas'),
+        }),
+        ...(cuposNormalizados !== undefined && { cupos: cuposNormalizados }),
+        ...(cuposListaEsperaNormalizados !== undefined && {
+          cuposListaEspera: cuposListaEsperaNormalizados,
+        }),
+        ...((cuposNormalizados !== undefined || cuposListaEsperaNormalizados !== undefined) && {
+          cuposTotales: cuposFinales + cuposListaEsperaFinales,
+        }),
+        ...(Object.prototype.hasOwnProperty.call(data, 'fechaInicio') && {
+          fechaInicio: parseDate(data.fechaInicio, 'fechaInicio'),
+        }),
+        ...(Object.prototype.hasOwnProperty.call(data, 'fechaFin') && {
+          fechaFin: parseDate(data.fechaFin, 'fechaFin'),
+        }),
+        ...(Object.prototype.hasOwnProperty.call(data, 'fechaInicioInscripcion') && {
+          fechaInicioInscripcion: parseDate(data.fechaInicioInscripcion, 'fechaInicioInscripcion'),
+        }),
+        ...(Object.prototype.hasOwnProperty.call(data, 'fechaFinInscripcion') && {
+          fechaFinInscripcion: parseDate(data.fechaFinInscripcion, 'fechaFinInscripcion'),
+        }),
+        ...(institutoIdsNormalizados !== undefined && {
+          institutoIds: institutoIdsNormalizados,
+        }),
       }
 
       const cohorte = await cohorteService.update(id, {

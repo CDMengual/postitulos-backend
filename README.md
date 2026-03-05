@@ -87,6 +87,10 @@ JWT_SECRET="SECRETO_LARGO_Y_ALEATORIO"
 PORT=4000
 CLIENT_URL="http://localhost:3000"
 NODE_ENV="development"
+SUPABASE_URL="https://<project-ref>.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="<service-role-key>"
+SUPABASE_BUCKET="inscripciones-documentos"
+PUBLIC_UPLOAD_MAX_BYTES=8388608
 ```
 
 Notas:
@@ -94,6 +98,8 @@ Notas:
 - `DATABASE_URL` es obligatoria para Prisma.
 - `JWT_SECRET` es obligatoria para login/verificacion de token.
 - `CLIENT_URL` se usa en CORS para permitir credenciales desde el frontend.
+- `SUPABASE_BUCKET` debe ser un bucket privado para DNI/Titulo.
+- `PUBLIC_UPLOAD_MAX_BYTES` es opcional; por defecto 8 MB.
 
 ## Base de datos y Prisma
 
@@ -190,6 +196,8 @@ Base URL local: `http://localhost:4000`
 
 - `GET /api/public/cohortes-en-inscripcion`
 - `GET /api/public/cohortes/:id`
+- `POST /api/public/cohortes/:id/uploads/sign`
+- `POST /api/public/cohortes/:id/inscripciones`
 
 ### Auth (`/api/auth`)
 
@@ -283,6 +291,8 @@ Resumen por modulo (campo `data`):
 
 - `GET /api/public/cohortes-en-inscripcion`: lista de cohortes en estado `INSCRIPCION` con `id`, `nombre`, `anio`, fechas de inscripcion, `postitulo` basico y `formulario` (incluye `campos`).
 - `GET /api/public/cohortes/:id`: una cohorte publica con `postitulo` ampliado (`planEstudios`, `resolucion`, `tipos`) y `formulario`.
+- `POST /api/public/cohortes/:id/uploads/sign`: genera URL firmada de subida para bucket privado (`tipo`: `dni` o `titulo`).
+- `POST /api/public/cohortes/:id/inscripciones`: crea inscripcion publica. Para adjuntos enviar `dniAdjuntoPath` y/o `tituloAdjuntoPath` (ruta interna de Supabase Storage, no URL publica).
 
 ### Auth
 

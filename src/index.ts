@@ -12,6 +12,7 @@ import cursanteRoutes from './routes/cursante.routes'
 import cohorteRoutes from './routes/cohorte.routes'
 import formularioRoutes from './routes/formulario.routes'
 import publicRoutes from './routes/public.routes'
+import inscriptoRoutes from './routes/inscripto.routes'
 
 dotenv.config()
 
@@ -40,6 +41,7 @@ app.use('/api/aulas', aulaRoutes)
 app.use('/api/cursantes', cursanteRoutes)
 app.use('/api/cohortes', cohorteRoutes)
 app.use('/api/formularios', formularioRoutes)
+app.use('/api/inscripciones', inscriptoRoutes)
 
 // --- Servidor ---
 app.listen(PORT, () => {
