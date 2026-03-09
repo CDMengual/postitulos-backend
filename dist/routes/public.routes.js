@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const public_controller_1 = require("../controllers/public.controller");
+const router = (0, express_1.Router)();
+router.get('/cohortes-en-inscripcion', public_controller_1.publicController.cohortesEnInscripcion);
+router.get('/cohortes/:id', public_controller_1.publicController.getCohorte);
+router.post('/cohortes/:id/uploads/sign', public_controller_1.publicController.signUpload);
+router.post('/cohortes/:id/inscripciones', public_controller_1.publicController.createInscripcion);
+exports.default = router;

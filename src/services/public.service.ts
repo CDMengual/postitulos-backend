@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '../prisma/client'
 
 type PublicDbClient = {
@@ -5,26 +6,25 @@ type PublicDbClient = {
   inscripto: typeof prisma.inscripto
 }
 
-const getCapacidad = (value: number | null | undefined) => Math.max(value ?? 0, 0)
+type DisponibilidadInscripcion = ReturnType<typeof calcularDisponibilidad>
+const MAX_SERIALIZATION_RETRIES = 5
 
-const isEnListaDeEspera = (inscripto: { estado: string; listaEspera: boolean }) =>
-  inscripto.estado === 'LISTA_ESPERA' || inscripto.listaEspera
+const getCapacidad = (value: number | null | undefined) => Math.max(value ?? 0, 0)
 
 const calcularDisponibilidad = ({
   cupos,
   cuposListaEspera,
-  inscriptosRegulares,
-  inscriptosEspera,
+  inscriptosTotales,
 }: {
   cupos?: number | null
   cuposListaEspera?: number | null
-  inscriptosRegulares: number
-  inscriptosEspera: number
+  inscriptosTotales: number
 }) => {
   const capacidadRegular = getCapacidad(cupos)
   const capacidadEspera = getCapacidad(cuposListaEspera)
   const cuposTotales = capacidadRegular + capacidadEspera
-  const inscriptosTotales = inscriptosRegulares + inscriptosEspera
+  const inscriptosRegulares = Math.min(inscriptosTotales, capacidadRegular)
+  const inscriptosEspera = Math.max(inscriptosTotales - capacidadRegular, 0)
   const cuposDisponibles = Math.max(capacidadRegular - inscriptosRegulares, 0)
   const cuposEsperaDisponibles = Math.max(capacidadEspera - inscriptosEspera, 0)
   const cuposTotalesDisponibles = Math.max(cuposTotales - inscriptosTotales, 0)
@@ -105,6 +105,46 @@ const toStringArray = (value: unknown): string[] => {
   return []
 }
 
+const CAMPO_TITULO_DOCENTE = {
+  id: 'titulo_docente_tramo_pedagogico',
+  label: 'Titulo docente o tramo pedagogico',
+  type: 'text',
+  required: false,
+}
+
+const ensureCampoTituloDocente = (camposRaw: unknown) => {
+  if (!Array.isArray(camposRaw)) return camposRaw
+
+  const idsPermitidos = new Set([
+    'titulo_docente_tramo_pedagogico',
+    'titulo_docente_o_tramo_pedagogico',
+    'titulo_docente',
+    'titulo_tramo_pedagogico',
+  ])
+
+  const camposSinTitulo = camposRaw.filter((campo) => {
+    if (!campo || typeof campo !== 'object' || Array.isArray(campo)) return false
+    const id = (campo as Record<string, unknown>).id
+    return !(typeof id === 'string' && idsPermitidos.has(normalizeKey(id)))
+  })
+
+  const indexDistrito = camposSinTitulo.findIndex((campo) => {
+    if (!campo || typeof campo !== 'object' || Array.isArray(campo)) return false
+    const id = (campo as Record<string, unknown>).id
+    return typeof id === 'string' && normalizeKey(id) === 'distrito_residencia'
+  })
+
+  if (indexDistrito >= 0) {
+    return [
+      ...camposSinTitulo.slice(0, indexDistrito + 1),
+      CAMPO_TITULO_DOCENTE,
+      ...camposSinTitulo.slice(indexDistrito + 1),
+    ]
+  }
+
+  return [...camposSinTitulo, CAMPO_TITULO_DOCENTE]
+}
+
 const evaluarPrioridadEI = (datosFormularioRaw: unknown) => {
   const datosFormulario = toRecord(datosFormularioRaw)
 
@@ -159,6 +199,60 @@ const evaluarPrioridadEI = (datosFormularioRaw: unknown) => {
   }
 }
 
+const evaluarPrioridadEA = (datosFormularioRaw: unknown) => {
+  const datosFormulario = toRecord(datosFormularioRaw)
+
+  const poseeTituloValue = getValueByKeys(datosFormulario, ['posee_titulo_docente'])
+  const poseeTitulo = toBoolean(poseeTituloValue)
+
+  if (poseeTitulo === false) {
+    return {
+      estado: 'RECHAZADA' as const,
+      prioridad: 0,
+      observaciones:
+        'Rechazada por no cumplir requisito excluyente: titulo docente habilitante para Educacion Secundaria.',
+    }
+  }
+
+  const requisitosPrioritariosValue = getValueByKeys(datosFormulario, ['requisitos_prioritarios'])
+  const requisitosPrioritarios = toStringArray(requisitosPrioritariosValue).map((value) =>
+    value.toLowerCase(),
+  )
+
+  let prioridad = 0
+
+  const enEjercicioSecundaria = requisitosPrioritarios.some(
+    (item) => item.includes('estar en ejercicio') && item.includes('educacion secundaria'),
+  )
+  if (enEjercicioSecundaria) prioridad += 1
+
+  const equipoGestion = requisitosPrioritarios.some((item) =>
+    item.includes('equipo de gestion'),
+  )
+  if (equipoGestion) prioridad += 1
+
+  const bibliotecario = requisitosPrioritarios.some((item) =>
+    item.includes('bibliotecario'),
+  )
+  if (bibliotecario) prioridad += 1
+
+  return {
+    estado: 'PENDIENTE' as const,
+    prioridad,
+    observaciones: null,
+  }
+}
+
+const resolveEstadoInscripcion = (
+  evaluacion: { estado: 'PENDIENTE' | 'RECHAZADA'; prioridad: number; observaciones: string | null },
+) => {
+  if (evaluacion.estado === 'RECHAZADA') {
+    return evaluacion.estado
+  }
+
+  return evaluacion.estado
+}
+
 export const publicService = {
   // Cohortes en inscripcion (solo datos publicos)
   async getCohortesEnInscripcion() {
@@ -180,7 +274,6 @@ export const publicService = {
         inscriptos: {
           select: {
             estado: true,
-            listaEspera: true,
           },
           where: {
             estado: {
@@ -194,6 +287,7 @@ export const publicService = {
             id: true,
             nombre: true,
             codigo: true,
+            requisitos: true,
             destinatarios: true,
           },
         },
@@ -214,14 +308,12 @@ export const publicService = {
     return cohortes
       .map((cohorte) => {
         const { inscriptos, ...cohorteBase } = cohorte
-        const inscriptosEspera = inscriptos.filter(isEnListaDeEspera).length
-        const inscriptosRegulares = inscriptos.length - inscriptosEspera
+        const inscriptosTotales = inscriptos.length
 
         const disponibilidad = calcularDisponibilidad({
           cupos: cohorte.cupos,
           cuposListaEspera: cohorte.cuposListaEspera,
-          inscriptosRegulares,
-          inscriptosEspera,
+          inscriptosTotales,
         })
 
         const enPeriodo = estaEnPeriodoInscripcion({
@@ -233,6 +325,12 @@ export const publicService = {
 
         return {
           ...cohorteBase,
+          formulario: cohorteBase.formulario
+            ? {
+                ...cohorteBase.formulario,
+                campos: ensureCampoTituloDocente(cohorteBase.formulario.campos),
+              }
+            : cohorteBase.formulario,
           ...disponibilidad,
           inscripcionHabilitada: enPeriodo && tieneCuposDisponibles,
           enPeriodoInscripcion: enPeriodo,
@@ -245,7 +343,7 @@ export const publicService = {
 
   // Obtener cohorte publica por ID
   async getCohortePublic(id: number) {
-    return prisma.cohorte.findUnique({
+    const cohorte = await prisma.cohorte.findUnique({
       where: { id },
       select: {
         id: true,
@@ -259,6 +357,7 @@ export const publicService = {
             id: true,
             nombre: true,
             codigo: true,
+            requisitos: true,
             destinatarios: true,
             planEstudios: true,
             resolucion: true,
@@ -281,6 +380,18 @@ export const publicService = {
         },
       },
     })
+
+    if (!cohorte) return null
+
+    return {
+      ...cohorte,
+      formulario: cohorte.formulario
+        ? {
+            ...cohorte.formulario,
+            campos: ensureCampoTituloDocente(cohorte.formulario.campos),
+          }
+        : cohorte.formulario,
+    }
   },
 
   async validateCohorteDisponibleParaInscripcion(
@@ -315,28 +426,17 @@ export const publicService = {
       return { error: 'La inscripcion para esta cohorte ya cerro', code: 400 as const }
     }
 
-    const [inscriptosRegulares, inscriptosEspera] = await Promise.all([
-      db.inscripto.count({
-        where: {
-          cohorteId,
-          estado: { not: 'RECHAZADA' },
-          NOT: [{ estado: 'LISTA_ESPERA' }, { listaEspera: true }],
-        },
-      }),
-      db.inscripto.count({
-        where: {
-          cohorteId,
-          estado: { not: 'RECHAZADA' },
-          OR: [{ estado: 'LISTA_ESPERA' }, { listaEspera: true }],
-        },
-      }),
-    ])
+    const inscriptosTotales = await db.inscripto.count({
+      where: {
+        cohorteId,
+        estado: { not: 'RECHAZADA' },
+      },
+    })
 
     const disponibilidad = calcularDisponibilidad({
       cupos: cohorte.cupos,
       cuposListaEspera: cohorte.cuposListaEspera,
-      inscriptosRegulares,
-      inscriptosEspera,
+      inscriptosTotales,
     })
 
     if (!disponibilidad.inscripcionHabilitada) {
@@ -369,66 +469,98 @@ export const publicService = {
     dniAdjuntoUrl?: string | null
     tituloAdjuntoUrl?: string | null
   }) {
-    return prisma.$transaction(async (tx) => {
-      const cohorteResult = await this.validateCohorteDisponibleParaInscripcion(data.cohorteId, tx)
-      if ('error' in cohorteResult && cohorteResult.error) {
-        return cohorteResult
-      }
+    for (let attempt = 1; attempt <= MAX_SERIALIZATION_RETRIES; attempt += 1) {
+      try {
+        return await prisma.$transaction(
+          async (tx) => {
+            await tx.$queryRaw`SELECT id FROM Cohorte WHERE id = ${data.cohorteId} FOR UPDATE`
 
-      const yaExiste = await this.existsInscripcionByCohorteYDni(data.cohorteId, data.dni, tx)
-      if (yaExiste) {
-        return {
-          error: 'Ya existe una inscripcion para este DNI en la cohorte',
-          code: 409 as const,
-        }
-      }
+            const cohorteResult = await this.validateCohorteDisponibleParaInscripcion(data.cohorteId, tx)
+            if ('error' in cohorteResult && cohorteResult.error) {
+              return cohorteResult
+            }
+            if (!('data' in cohorteResult) || !cohorteResult.data) {
+              return {
+                error: 'No se pudo validar la disponibilidad de la cohorte',
+                code: 500 as const,
+              }
+            }
+            const disponibilidadActual = cohorteResult.data
 
-      const cohorteMeta = await tx.cohorte.findUnique({
-        where: { id: data.cohorteId },
-        select: {
-          postitulo: {
-            select: { codigo: true },
+            const yaExiste = await this.existsInscripcionByCohorteYDni(data.cohorteId, data.dni, tx)
+            if (yaExiste) {
+              return {
+                error: 'Ya existe una inscripcion para este DNI en la cohorte',
+                code: 409 as const,
+              }
+            }
+
+            const cohorteMeta = await tx.cohorte.findUnique({
+              where: { id: data.cohorteId },
+              select: {
+                postitulo: {
+                  select: { codigo: true },
+                },
+              },
+            })
+
+            const codigoPostitulo = (cohorteMeta?.postitulo?.codigo || '').trim().toUpperCase()
+            const evaluacionPrioridad =
+              codigoPostitulo === 'EI'
+                ? evaluarPrioridadEI(data.datosFormulario)
+                : codigoPostitulo === 'EA'
+                  ? evaluarPrioridadEA(data.datosFormulario)
+                  : { estado: 'PENDIENTE' as const, prioridad: 0, observaciones: null }
+
+            const estadoInscripcion = resolveEstadoInscripcion(evaluacionPrioridad)
+
+            const inscripto = await tx.inscripto.create({
+              data: {
+                cohorteId: data.cohorteId,
+                nombre: data.nombre,
+                apellido: data.apellido,
+                dni: data.dni,
+                email: data.email || null,
+                celular: data.celular || null,
+                datosFormulario: data.datosFormulario ?? null,
+                dniAdjuntoUrl: data.dniAdjuntoUrl || null,
+                tituloAdjuntoUrl: data.tituloAdjuntoUrl || null,
+                estado: estadoInscripcion,
+                prioridad: evaluacionPrioridad.prioridad,
+                observaciones: evaluacionPrioridad.observaciones,
+              },
+              select: {
+                id: true,
+                cohorteId: true,
+                nombre: true,
+                apellido: true,
+                dni: true,
+                email: true,
+                celular: true,
+                estado: true,
+                createdAt: true,
+              },
+            })
+
+            return { data: inscripto }
           },
-        },
-      })
+          {
+            isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          },
+        )
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2034' &&
+          attempt < MAX_SERIALIZATION_RETRIES
+        ) {
+          continue
+        }
 
-      const codigoPostitulo = (cohorteMeta?.postitulo?.codigo || '').trim().toUpperCase()
-      const evaluacionPrioridad =
-        codigoPostitulo === 'EI'
-          ? evaluarPrioridadEI(data.datosFormulario)
-          : { estado: 'PENDIENTE' as const, prioridad: 0, observaciones: null }
+        throw error
+      }
+    }
 
-      const inscripto = await tx.inscripto.create({
-        data: {
-          cohorteId: data.cohorteId,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          dni: data.dni,
-          email: data.email || null,
-          celular: data.celular || null,
-          datosFormulario: data.datosFormulario ?? null,
-          dniAdjuntoUrl: data.dniAdjuntoUrl || null,
-          tituloAdjuntoUrl: data.tituloAdjuntoUrl || null,
-          estado: evaluacionPrioridad.estado,
-          prioridad: evaluacionPrioridad.prioridad,
-          observaciones: evaluacionPrioridad.observaciones,
-          listaEspera: false,
-        },
-        select: {
-          id: true,
-          cohorteId: true,
-          nombre: true,
-          apellido: true,
-          dni: true,
-          email: true,
-          celular: true,
-          estado: true,
-          listaEspera: true,
-          createdAt: true,
-        },
-      })
-
-      return { data: inscripto }
-    })
+    throw new Error('No se pudo completar la inscripcion por conflictos de concurrencia')
   },
 }

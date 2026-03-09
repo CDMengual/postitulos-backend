@@ -6,7 +6,26 @@ import prisma from '../prisma/client'
 export const cohorteController = {
   async getAll(req: Request, res: Response) {
     try {
-      const cohortes = await cohorteService.getAll()
+      const estadoQuery = String(req.query.estado || '').trim().toUpperCase()
+      const estado = estadoQuery || undefined
+      const estadosPermitidos = [
+        'ALL',
+        'INSCRIPCION',
+        'ACTIVA',
+        'INACTIVA',
+        'FINALIZADA',
+        'CANCELADA',
+      ]
+
+      if (estado && !estadosPermitidos.includes(estado)) {
+        return sendError(
+          res,
+          'estado invalido. Valores permitidos: ALL, INSCRIPCION, ACTIVA, INACTIVA, FINALIZADA, CANCELADA',
+          400,
+        )
+      }
+
+      const cohortes = await cohorteService.getAll(estado as any)
       return sendSuccess(res, 'Cohortes obtenidas correctamente', cohortes, {
         total: cohortes.length,
       })

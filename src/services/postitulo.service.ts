@@ -8,6 +8,7 @@ export const postituloService = {
         id: true,
         nombre: true,
         codigo: true,
+        requisitos: true,
         resolucion: true,
         coordinadores: true,
         autores: true,

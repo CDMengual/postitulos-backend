@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const cursante_controller_1 = require("../controllers/cursante.controller");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authMiddleware);
+router.post('/', cursante_controller_1.cursanteController.createStandalone);
+router.post('/:id/asignar-aula', cursante_controller_1.cursanteController.assignToAula);
+router.get('/', cursante_controller_1.cursanteController.getAll);
+router.get('/:id', cursante_controller_1.cursanteController.getById);
+router.patch('/:id', cursante_controller_1.cursanteController.update);
+router.delete('/:id', cursante_controller_1.cursanteController.remove);
+exports.default = router;

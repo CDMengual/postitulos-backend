@@ -9,7 +9,12 @@ export function canAccess(resource: 'aula') {
 
       switch (resource) {
         case 'aula': {
-          const aulaId = Number(req.params.id)
+          const aulaIdRaw = req.params.aulaId ?? req.params.id
+          const aulaId = Number(aulaIdRaw)
+
+          if (!aulaIdRaw || Number.isNaN(aulaId)) {
+            return res.status(400).json({ message: 'aulaId invalido' })
+          }
 
           const aula = await prisma.aula.findUnique({
             where: { id: aulaId },

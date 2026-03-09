@@ -5,14 +5,143 @@ import prisma from '../prisma/client'
 import * as XLSX from 'xlsx'
 
 export const aulaController = {
+  async createMonthlySnapshot(req: Request, res: Response) {
+    try {
+      const aulaId = Number(req.params.aulaId)
+      const fechaCorte = req.body.fechaCorte ? new Date(req.body.fechaCorte) : undefined
+      const observaciones =
+        typeof req.body.observaciones === 'string' ? req.body.observaciones : undefined
+
+      if (!Number.isInteger(aulaId) || aulaId <= 0) {
+        return sendError(res, 'aulaId invalido', 400)
+      }
+
+      if (fechaCorte && Number.isNaN(fechaCorte.getTime())) {
+        return sendError(res, 'fechaCorte invalida', 400)
+      }
+
+      const snapshot = await aulaService.createMonthlySnapshot(aulaId, {
+        fechaCorte,
+        observaciones,
+      })
+
+      return sendSuccess(res, 'Snapshot mensual generado correctamente', snapshot, null, 201)
+    } catch (error: any) {
+      console.error(error)
+      return sendError(res, error.message || 'Error al generar snapshot mensual', 400)
+    }
+  },
+
+  async createMonthlySnapshotsForCohorte(req: Request, res: Response) {
+    try {
+      const cohorteId = Number(req.body.cohorteId)
+      const fechaCorte = req.body.fechaCorte ? new Date(req.body.fechaCorte) : undefined
+      const observaciones =
+        typeof req.body.observaciones === 'string' ? req.body.observaciones : undefined
+
+      if (!Number.isInteger(cohorteId) || cohorteId <= 0) {
+        return sendError(res, 'cohorteId invalido', 400)
+      }
+
+      if (fechaCorte && Number.isNaN(fechaCorte.getTime())) {
+        return sendError(res, 'fechaCorte invalida', 400)
+      }
+
+      const snapshots = await aulaService.createMonthlySnapshotsForCohorte(cohorteId, {
+        fechaCorte,
+        observaciones,
+      })
+
+      return sendSuccess(
+        res,
+        'Snapshots mensuales generados correctamente',
+        snapshots,
+        { total: snapshots.length },
+        201,
+      )
+    } catch (error: any) {
+      console.error(error)
+      return sendError(res, error.message || 'Error al generar snapshots mensuales', 400)
+    }
+  },
+
+  async getMonthlySnapshotsByAula(req: Request, res: Response) {
+    try {
+      const aulaId = Number(req.params.aulaId)
+
+      if (!Number.isInteger(aulaId) || aulaId <= 0) {
+        return sendError(res, 'aulaId invalido', 400)
+      }
+
+      const snapshots = await aulaService.getMonthlySnapshotsByAula(aulaId)
+      return sendSuccess(res, 'Snapshots mensuales obtenidos correctamente', snapshots, {
+        total: snapshots.length,
+      })
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al obtener snapshots mensuales', 500)
+    }
+  },
+
+  async getMonthlySnapshotSeriesByCohorte(req: Request, res: Response) {
+    try {
+      const cohorteId = Number(req.query.cohorteId)
+      const userId = req.user?.id
+      const rol = req.user?.rol
+
+      if (!Number.isInteger(cohorteId) || cohorteId <= 0) {
+        return sendError(res, 'cohorteId invalido', 400)
+      }
+
+      if (!userId || !rol) {
+        return sendError(res, 'No autorizado', 401)
+      }
+
+      const serie = await aulaService.getMonthlySnapshotsSeriesByCohorte(userId, rol, cohorteId)
+      return sendSuccess(res, 'Serie mensual obtenida correctamente', serie)
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al obtener la serie mensual', 500)
+    }
+  },
   // 🔹 GET /api/aulas
   async getAll(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id
       const rol = (req as any).user?.rol
+      const estadoQuery = String(req.query.estado || '').trim().toUpperCase()
+      const estado = estadoQuery || undefined
+      const postituloIdQuery = req.query.postituloId
+      const postituloId =
+        postituloIdQuery !== undefined && postituloIdQuery !== null && String(postituloIdQuery).trim() !== ''
+          ? Number(postituloIdQuery)
+          : undefined
+      const estadosPermitidos = [
+        'ALL',
+        'INSCRIPCION',
+        'ACTIVA',
+        'INACTIVA',
+        'FINALIZADA',
+        'CANCELADA',
+      ]
       if (!userId) return sendError(res, 'No autorizado', 401)
+      if (estado && !estadosPermitidos.includes(estado)) {
+        return sendError(
+          res,
+          'estado invalido. Valores permitidos: ALL, INSCRIPCION, ACTIVA, INACTIVA, FINALIZADA, CANCELADA',
+          400,
+        )
+      }
+      if (postituloId !== undefined && (!Number.isInteger(postituloId) || postituloId <= 0)) {
+        return sendError(res, 'postituloId invalido', 400)
+      }
 
-      const aulas = await aulaService.getAllForUser(userId, rol)
+      const aulas = await aulaService.getAllForUser(
+        userId,
+        rol,
+        estado as any,
+        postituloId,
+      )
       return sendSuccess(res, 'Aulas obtenidas correctamente', aulas, { total: aulas.length })
     } catch (error) {
       console.error(error)
@@ -37,8 +166,12 @@ export const aulaController = {
         email: ins.cursante.email,
         celular: ins.cursante.celular,
         titulo: ins.cursante.titulo,
+        regionId: ins.cursante.regionId,
+        distritoId: ins.cursante.distritoId,
         estado: ins.estado,
         documentacion: ins.documentacion,
+        dniAdjuntoUrl: ins.dniAdjuntoUrl,
+        tituloAdjuntoUrl: ins.tituloAdjuntoUrl,
       }))
 
       const result = { ...aula, cursantes }

@@ -46,7 +46,7 @@ export const inscriptoService = {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ prioridad: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
         select: {
           id: true,
           cohorteId: true,
@@ -58,7 +58,6 @@ export const inscriptoService = {
           estado: true,
           institutoId: true,
           prioridad: true,
-          listaEspera: true,
           condicionada: true,
           documentacion: true,
           createdAt: true,
@@ -111,7 +110,6 @@ export const inscriptoService = {
         estado: true,
         institutoId: true,
         prioridad: true,
-        listaEspera: true,
         condicionada: true,
         observaciones: true,
         documentacion: true,
@@ -149,17 +147,52 @@ export const inscriptoService = {
 
   async updateEstado(id: number, estado: EstadoInscripto) {
     return prisma.$transaction(async (tx) => {
+      const toPositiveIntOrNull = (value: unknown): number | null => {
+        if (typeof value === 'number' && Number.isInteger(value) && value > 0) return value
+        if (typeof value === 'string') {
+          const parsed = Number(value.trim())
+          if (Number.isInteger(parsed) && parsed > 0) return parsed
+        }
+        return null
+      }
+
+      const getValueByKeys = (
+        source: Record<string, unknown> | null,
+        keys: string[],
+      ): unknown | null => {
+        if (!source) return null
+        for (const key of keys) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            return source[key]
+          }
+        }
+        return null
+      }
+
       const inscripto = await tx.inscripto.findUnique({
         where: { id },
         select: {
           id: true,
           cohorteId: true,
           institutoId: true,
+          datosFormulario: true,
           dni: true,
           nombre: true,
           apellido: true,
           email: true,
           celular: true,
+          dniAdjuntoUrl: true,
+          tituloAdjuntoUrl: true,
+          instituto: {
+            select: {
+              distritoId: true,
+              distrito: {
+                select: {
+                  regionId: true,
+                },
+              },
+            },
+          },
         },
       })
 
@@ -172,12 +205,10 @@ export const inscriptoService = {
           where: { id },
           data: {
             estado,
-            listaEspera: estado === 'LISTA_ESPERA',
           },
           select: {
             id: true,
             estado: true,
-            listaEspera: true,
             updatedAt: true,
           },
         })
@@ -187,9 +218,45 @@ export const inscriptoService = {
         throw new Error('El inscripto debe tener instituto asignado para pasar a ASIGNADA')
       }
 
+      const datosFormularioRecord =
+        inscripto.datosFormulario && typeof inscripto.datosFormulario === 'object'
+          ? (inscripto.datosFormulario as Record<string, unknown>)
+          : null
+      const tituloDocenteRaw = getValueByKeys(datosFormularioRecord, [
+        'titulo_docente_tramo_pedagogico',
+        'titulo_docente_o_tramo_pedagogico',
+        'titulo_docente',
+        'titulo_tramo_pedagogico',
+      ])
+      const tituloDocente =
+        typeof tituloDocenteRaw === 'string' && tituloDocenteRaw.trim().length > 0
+          ? tituloDocenteRaw.trim()
+          : null
+
+      const regionFormulario = toPositiveIntOrNull(
+        getValueByKeys(datosFormularioRecord, ['region_residencia']),
+      )
+      const distritoFormulario = toPositiveIntOrNull(
+        getValueByKeys(datosFormularioRecord, ['distrito_residencia']),
+      )
+
+      let distritoId = inscripto.instituto?.distritoId ?? null
+      let regionId = inscripto.instituto?.distrito?.regionId ?? regionFormulario
+
+      if (distritoFormulario) {
+        const distrito = await tx.distrito.findUnique({
+          where: { id: distritoFormulario },
+          select: { id: true, regionId: true },
+        })
+        if (distrito) {
+          distritoId = distrito.id
+          regionId = distrito.regionId
+        }
+      }
+
       let cursante = await tx.cursante.findUnique({
         where: { dni: inscripto.dni },
-        select: { id: true },
+        select: { id: true, titulo: true, regionId: true, distritoId: true },
       })
 
       if (!cursante) {
@@ -200,8 +267,25 @@ export const inscriptoService = {
             apellido: inscripto.apellido,
             email: inscripto.email,
             celular: inscripto.celular,
+            titulo: tituloDocente,
+            regionId,
+            distritoId,
           },
-          select: { id: true },
+          select: { id: true, titulo: true, regionId: true, distritoId: true },
+        })
+      } else if (
+        (!cursante.titulo && tituloDocente) ||
+        (!cursante.regionId && regionId) ||
+        (!cursante.distritoId && distritoId)
+      ) {
+        cursante = await tx.cursante.update({
+          where: { id: cursante.id },
+          data: {
+            ...(cursante.titulo ? {} : { titulo: tituloDocente }),
+            regionId: cursante.regionId || regionId,
+            distritoId: cursante.distritoId || distritoId,
+          },
+          select: { id: true, titulo: true, regionId: true, distritoId: true },
         })
       }
 
@@ -225,6 +309,15 @@ export const inscriptoService = {
         | undefined
 
       if (existenteEnCohorte) {
+        await tx.cursanteAula.update({
+          where: { id: existenteEnCohorte.id },
+          data: {
+            documentacion: 'VERIFICADA',
+            dniAdjuntoUrl: inscripto.dniAdjuntoUrl || null,
+            tituloAdjuntoUrl: inscripto.tituloAdjuntoUrl || null,
+          },
+        })
+
         asignacion = {
           created: false,
           cursanteAulaId: existenteEnCohorte.id,
@@ -258,7 +351,9 @@ export const inscriptoService = {
             cursanteId: cursante.id,
             aulaId: aulaElegida.id,
             estado: 'ACTIVO',
-            documentacion: 'PENDIENTE',
+            documentacion: 'VERIFICADA',
+            dniAdjuntoUrl: inscripto.dniAdjuntoUrl || null,
+            tituloAdjuntoUrl: inscripto.tituloAdjuntoUrl || null,
           },
           select: {
             id: true,
@@ -275,16 +370,14 @@ export const inscriptoService = {
 
       const updated = await tx.inscripto.update({
         where: { id },
-        data: {
-          estado: 'ASIGNADA',
-          listaEspera: false,
-        },
-        select: {
-          id: true,
-          estado: true,
-          listaEspera: true,
-          updatedAt: true,
-        },
+          data: {
+            estado: 'ASIGNADA',
+          },
+          select: {
+            id: true,
+            estado: true,
+            updatedAt: true,
+          },
       })
 
       return {

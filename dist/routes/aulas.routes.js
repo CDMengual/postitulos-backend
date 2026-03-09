@@ -1,0 +1,31 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const aula_controller_1 = require("../controllers/aula.controller");
+const cursante_controller_1 = require("../controllers/cursante.controller");
+const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const accessControl_1 = require("../middlewares/accessControl");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authMiddleware);
+// --- Aulas ---
+router.get('/', aula_controller_1.aulaController.getAll);
+router.get('/snapshots-mensuales', aula_controller_1.aulaController.getMonthlySnapshotSeriesByCohorte);
+router.post('/snapshots-mensuales', aula_controller_1.aulaController.createMonthlySnapshotsForCohorte);
+router.get('/:id', (0, accessControl_1.canAccess)('aula'), aula_controller_1.aulaController.getById);
+router.post('/', aula_controller_1.aulaController.create);
+router.post('/massive', aula_controller_1.aulaController.createMany);
+router.patch('/:id', (0, accessControl_1.canAccess)('aula'), aula_controller_1.aulaController.update);
+router.delete('/:id', (0, accessControl_1.canAccess)('aula'), aula_controller_1.aulaController.remove);
+router.get('/:aulaId/snapshots-mensuales', (0, accessControl_1.canAccess)('aula'), aula_controller_1.aulaController.getMonthlySnapshotsByAula);
+router.post('/:aulaId/snapshots-mensuales', (0, accessControl_1.canAccess)('aula'), aula_controller_1.aulaController.createMonthlySnapshot);
+// --- Cursantes dentro de Aula ---
+router.post('/:aulaId/cursantes', cursante_controller_1.cursanteController.create);
+router.post('/:aulaId/cursantes/import', uploadMiddleware_1.uploadMemory.single('file'), cursante_controller_1.cursanteController.importFromFile);
+router.delete('/:aulaId/cursantes/:cursanteId', cursante_controller_1.cursanteController.removeCursanteFromAula);
+router.get('/:aulaId/cursantes/:cursanteId', (0, accessControl_1.canAccess)('aula'), cursante_controller_1.cursanteController.getDetalleEnAula);
+router.get('/:aulaId/cursantes/:cursanteId/documentos/:tipo/url', (0, accessControl_1.canAccess)('aula'), cursante_controller_1.cursanteController.getDocumentoUrlEnAula);
+router.patch('/:aulaId/cursantes/:cursanteId', (0, accessControl_1.canAccess)('aula'), cursante_controller_1.cursanteController.updateObservacionesEnAula);
+router.patch('/:aulaId/cursantes/:cursanteId/estado', cursante_controller_1.cursanteController.updateEstado);
+router.patch('/:aulaId/cursantes/:cursanteId/documentacion', cursante_controller_1.cursanteController.updateDocumentacion);
+exports.default = router;

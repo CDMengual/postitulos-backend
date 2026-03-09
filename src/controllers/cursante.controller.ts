@@ -1,8 +1,10 @@
 import { Request, Response } from 'express'
+import { EstadoCursante } from '@prisma/client'
 import * as XLSX from 'xlsx'
 import { sendError, sendSuccess } from '../utils/response'
 import { cursanteService } from '../services/cursante.service'
 import { inscripcionService } from '../services/inscripcion.service'
+import { storageService } from '../services/storage.service'
 
 export const cursanteController = {
   async getAll(req: Request, res: Response) {
@@ -191,10 +193,24 @@ export const cursanteController = {
 
   async updateEstado(req: Request, res: Response) {
     try {
-      const { estado } = req.body
+      const estado = String(req.body?.estado || '').trim().toUpperCase()
       const aulaId = Number(req.params.aulaId)
       const cursanteId = Number(req.params.cursanteId)
-      const updated = await inscripcionService.updateEstado(cursanteId, aulaId, estado)
+      const estadosValidos = Object.values(EstadoCursante)
+
+      if (!estadosValidos.includes(estado as EstadoCursante)) {
+        return sendError(
+          res,
+          'Estado invalido. Valores permitidos: ACTIVO, ADEUDA, BAJA, FINALIZADO',
+          400,
+        )
+      }
+
+      const updated = await inscripcionService.updateEstado(
+        cursanteId,
+        aulaId,
+        estado as EstadoCursante,
+      )
       return sendSuccess(res, 'Estado actualizado correctamente', updated)
     } catch (error) {
       console.error(error)
@@ -216,6 +232,119 @@ export const cursanteController = {
     } catch (error) {
       console.error(error)
       return sendError(res, 'Error al actualizar documentacion', 500)
+    }
+  },
+
+  async getDetalleEnAula(req: Request, res: Response) {
+    try {
+      const aulaId = Number(req.params.aulaId)
+      const cursanteId = Number(req.params.cursanteId)
+
+      if (Number.isNaN(aulaId) || Number.isNaN(cursanteId)) {
+        return sendError(res, 'aulaId o cursanteId invalido', 400)
+      }
+
+      const detalle = await inscripcionService.getDetalleCursanteEnAula(cursanteId, aulaId)
+      if (!detalle) {
+        return sendError(res, 'Cursante no encontrado en esa aula', 404)
+      }
+
+      return sendSuccess(res, 'Detalle de cursante en aula obtenido correctamente', {
+        cursante: {
+          id: detalle.cursante.id,
+          nombre: detalle.cursante.nombre,
+          apellido: detalle.cursante.apellido,
+          dni: detalle.cursante.dni,
+          email: detalle.cursante.email,
+          celular: detalle.cursante.celular,
+          titulo: detalle.cursante.titulo,
+          distrito: detalle.cursante.distrito?.nombre || null,
+          regionId: detalle.cursante.distrito?.regionId || null,
+        },
+        inscripcionAula: {
+          aulaId: detalle.aulaId,
+          aula: detalle.aula
+            ? {
+                id: detalle.aula.id,
+                nombre: detalle.aula.nombre,
+                codigo: detalle.aula.codigo,
+                numero: detalle.aula.numero,
+              }
+            : null,
+          cursanteId: detalle.cursanteId,
+          estado: detalle.estado,
+          documentacion: detalle.documentacion,
+          observaciones: detalle.observaciones,
+          dniAdjuntoUrl: detalle.dniAdjuntoUrl,
+          tituloAdjuntoUrl: detalle.tituloAdjuntoUrl,
+          createdAt: detalle.createdAt,
+          updatedAt: detalle.updatedAt,
+        },
+      })
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al obtener detalle de cursante en aula', 500)
+    }
+  },
+
+  async updateObservacionesEnAula(req: Request, res: Response) {
+    try {
+      const aulaId = Number(req.params.aulaId)
+      const cursanteId = Number(req.params.cursanteId)
+
+      if (Number.isNaN(aulaId) || Number.isNaN(cursanteId)) {
+        return sendError(res, 'aulaId o cursanteId invalido', 400)
+      }
+
+      const hasObservaciones = Object.prototype.hasOwnProperty.call(req.body, 'observaciones')
+      if (!hasObservaciones) {
+        return sendError(res, 'Debe enviar el campo observaciones', 400)
+      }
+
+      const value = req.body.observaciones
+      const observaciones =
+        value === null || value === undefined || String(value).trim() === ''
+          ? null
+          : String(value).trim()
+
+      const updated = await inscripcionService.updateObservaciones(cursanteId, aulaId, observaciones)
+      return sendSuccess(res, 'Observaciones actualizadas correctamente', updated)
+    } catch (error: any) {
+      console.error(error)
+      if (error?.code === 'P2025') {
+        return sendError(res, 'Cursante no encontrado en esa aula', 404)
+      }
+      return sendError(res, 'Error al actualizar observaciones', 500)
+    }
+  },
+
+  async getDocumentoUrlEnAula(req: Request, res: Response) {
+    try {
+      const aulaId = Number(req.params.aulaId)
+      const cursanteId = Number(req.params.cursanteId)
+      if (Number.isNaN(aulaId) || Number.isNaN(cursanteId)) {
+        return sendError(res, 'aulaId o cursanteId invalido', 400)
+      }
+
+      const tipo = String(req.params.tipo || '').trim().toLowerCase()
+      if (tipo !== 'dni' && tipo !== 'titulo') {
+        return sendError(res, 'tipo invalido. Valores permitidos: dni, titulo', 400)
+      }
+
+      const expiresIn = req.query.expiresIn ? Number(req.query.expiresIn) : undefined
+      const doc = await inscripcionService.getDocumentoPath(cursanteId, aulaId, tipo)
+      if (!doc) return sendError(res, 'Cursante no encontrado en esa aula', 404)
+      if (!doc.path) return sendError(res, 'El cursante no tiene documento cargado', 404)
+
+      const signedResult = await storageService.createSignedReadUrl(doc.path, expiresIn)
+      if ('error' in signedResult && signedResult.error) {
+        return sendError(res, signedResult.error, signedResult.code ?? 500)
+      }
+
+      return sendSuccess(res, 'URL firmada de documento generada', signedResult.data)
+    } catch (error) {
+      console.error(error)
+      return sendError(res, 'Error al obtener URL del documento', 500)
     }
   },
 }

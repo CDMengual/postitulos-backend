@@ -1,3 +1,4 @@
+import { EstadoCursante } from '@prisma/client'
 import prisma from '../prisma/client'
 
 export const inscripcionService = {
@@ -32,7 +33,12 @@ export const inscripcionService = {
 
     if (!yaInscripto) {
       await prisma.cursanteAula.create({
-        data: { cursanteId: cursante.id, aulaId, estado: 'ACTIVO', documentacion: 'PENDIENTE' },
+        data: {
+          cursanteId: cursante.id,
+          aulaId,
+          estado: EstadoCursante.ACTIVO,
+          documentacion: 'PENDIENTE',
+        },
       })
     }
 
@@ -55,7 +61,7 @@ export const inscripcionService = {
     }
 
     const inscripcion = await prisma.cursanteAula.create({
-      data: { cursanteId, aulaId, estado: 'ACTIVO', documentacion: 'PENDIENTE' },
+      data: { cursanteId, aulaId, estado: EstadoCursante.ACTIVO, documentacion: 'PENDIENTE' },
     })
 
     return { created: true, inscripcion }
@@ -92,7 +98,12 @@ export const inscripcionService = {
       }
 
       await prisma.cursanteAula.create({
-        data: { cursanteId: cursante.id, aulaId, estado: 'ACTIVO', documentacion: 'PENDIENTE' },
+        data: {
+          cursanteId: cursante.id,
+          aulaId,
+          estado: EstadoCursante.ACTIVO,
+          documentacion: 'PENDIENTE',
+        },
       })
 
       importados.push(cursante)
@@ -101,7 +112,11 @@ export const inscripcionService = {
     return { importados, duplicados }
   },
 
-  async updateEstado(cursanteId: number, aulaId: number, estado: 'ACTIVO' | 'ADEUDA' | 'BAJA') {
+  async updateEstado(
+    cursanteId: number,
+    aulaId: number,
+    estado: EstadoCursante,
+  ) {
     return prisma.cursanteAula.update({
       where: { cursanteId_aulaId: { cursanteId, aulaId } },
       data: { estado },
@@ -117,5 +132,84 @@ export const inscripcionService = {
       where: { cursanteId_aulaId: { cursanteId, aulaId } },
       data: { documentacion },
     })
+  },
+
+  async getDetalleCursanteEnAula(cursanteId: number, aulaId: number) {
+    return prisma.cursanteAula.findUnique({
+      where: { cursanteId_aulaId: { cursanteId, aulaId } },
+      select: {
+        aulaId: true,
+        cursanteId: true,
+        estado: true,
+        documentacion: true,
+        observaciones: true,
+        dniAdjuntoUrl: true,
+        tituloAdjuntoUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        aula: {
+          select: {
+            id: true,
+            nombre: true,
+            codigo: true,
+            numero: true,
+          },
+        },
+        cursante: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true,
+            dni: true,
+            email: true,
+            celular: true,
+            titulo: true,
+            distrito: {
+              select: {
+                nombre: true,
+                regionId: true,
+              },
+            },
+          },
+        },
+      },
+    })
+  },
+
+  async updateObservaciones(cursanteId: number, aulaId: number, observaciones: string | null) {
+    return prisma.cursanteAula.update({
+      where: { cursanteId_aulaId: { cursanteId, aulaId } },
+      data: { observaciones },
+      select: {
+        id: true,
+        aulaId: true,
+        cursanteId: true,
+        observaciones: true,
+        updatedAt: true,
+      },
+    })
+  },
+
+  async getDocumentoPath(cursanteId: number, aulaId: number, tipo: 'dni' | 'titulo') {
+    const inscripcion = await prisma.cursanteAula.findUnique({
+      where: { cursanteId_aulaId: { cursanteId, aulaId } },
+      select: {
+        id: true,
+        aulaId: true,
+        cursanteId: true,
+        dniAdjuntoUrl: true,
+        tituloAdjuntoUrl: true,
+      },
+    })
+
+    if (!inscripcion) return null
+
+    const path = tipo === 'dni' ? inscripcion.dniAdjuntoUrl : inscripcion.tituloAdjuntoUrl
+    return {
+      id: inscripcion.id,
+      aulaId: inscripcion.aulaId,
+      cursanteId: inscripcion.cursanteId,
+      path: path || null,
+    }
   },
 }

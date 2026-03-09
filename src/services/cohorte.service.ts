@@ -1,8 +1,19 @@
 import prisma from '../prisma/client'
+import { Prisma } from '@prisma/client'
 
 export const cohorteService = {
-  async getAll() {
+  async getAll(
+    estado?: 'ALL' | 'INSCRIPCION' | 'ACTIVA' | 'INACTIVA' | 'FINALIZADA' | 'CANCELADA',
+  ) {
+    const where: Prisma.CohorteWhereInput =
+      !estado || estado === 'ALL'
+        ? estado === 'ALL'
+          ? {}
+          : { estado: { in: ['INSCRIPCION', 'ACTIVA'] } }
+        : { estado }
+
     const cohortes = await prisma.cohorte.findMany({
+      where,
       select: {
         id: true,
         anio: true,

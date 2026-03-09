@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const instituto_controller_1 = require("../controllers/instituto.controller");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authMiddleware);
+router.get('/', instituto_controller_1.institutoController.getAll);
+router.get('/:id', instituto_controller_1.institutoController.getById);
+router.post('/', instituto_controller_1.institutoController.create);
+router.patch('/:id', instituto_controller_1.institutoController.update);
+router.delete('/:id', instituto_controller_1.institutoController.remove);
+exports.default = router;

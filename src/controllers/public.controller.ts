@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { Prisma } from '@prisma/client'
 import { publicService } from '../services/public.service'
 import { storageService } from '../services/storage.service'
 import { sendSuccess, sendError } from '../utils/response'
@@ -159,6 +160,21 @@ export const publicController = {
 
       return sendSuccess(res, 'Inscripcion recibida correctamente', result.data, null, 201)
     } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002' &&
+        Array.isArray(err.meta?.target) &&
+        err.meta.target.includes('cohorteId') &&
+        err.meta.target.includes('dni')
+      ) {
+        const cohorteId = Number(req.params.id ?? req.body?.cohorteId)
+        return sendError(res, 'Ya existe una inscripcion para este DNI en la cohorte', 409, {
+          appCode: 'INSCRIPCION_DUPLICADA_COHORTE_DNI',
+          field: 'dni',
+          cohorteId: Number.isFinite(cohorteId) ? cohorteId : null,
+        })
+      }
+
       console.error(err)
       return sendError(res, 'Error al registrar inscripcion publica', 500)
     }

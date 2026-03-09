@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const inscripto_controller_1 = require("../controllers/inscripto.controller");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authMiddleware);
+router.patch('/institutos/asignacion-masiva', inscripto_controller_1.inscriptoController.assignInstitutosBulk);
+router.get('/', inscripto_controller_1.inscriptoController.getAll);
+router.get('/:id', inscripto_controller_1.inscriptoController.getById);
+router.get('/:id/documentos/:tipo/url', inscripto_controller_1.inscriptoController.getDocumentoUrl);
+router.patch('/:id', inscripto_controller_1.inscriptoController.update);
+router.patch('/:id/estado', inscripto_controller_1.inscriptoController.updateEstado);
+router.patch('/:id/documentacion', inscripto_controller_1.inscriptoController.updateDocumentacion);
+router.patch('/:id/instituto', inscripto_controller_1.inscriptoController.assignInstituto);
+exports.default = router;

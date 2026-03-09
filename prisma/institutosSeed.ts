@@ -1,14 +1,17 @@
 import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🚀 Seed de Institutos (solo inserta institutos en distritos existentes)\n')
+  console.log('Seed de institutos')
 
-  // ⚠️ EDITAR: completa acá tus institutos por región y distrito
   const regiones = [
     {
       id: 1,
-      distritos: [{ nombre: 'La Plata', institutos: [{ nombre: 'ISFD N°17' }] }],
+      distritos: [
+        { nombre: 'La Plata', institutos: [{ nombre: 'ISFD N°17' }] },
+        { nombre: 'Brandsen', institutos: [{ nombre: 'ISFDyT N°49' }] },
+      ],
     },
     {
       id: 2,
@@ -19,7 +22,16 @@ async function main() {
     },
     {
       id: 3,
-      distritos: [{ nombre: 'La Matanza', institutos: [{ nombre: 'ISFDyT N°105' }] }],
+      distritos: [
+        {
+          nombre: 'La Matanza',
+          institutos: [
+            { nombre: 'ISFDyT N°46' },
+            { nombre: 'ISFDyT N°105' },
+            { nombre: 'ISFD N°106' },
+          ],
+        },
+      ],
     },
     {
       id: 4,
@@ -27,7 +39,12 @@ async function main() {
     },
     {
       id: 5,
-      distritos: [{ nombre: 'Glew', institutos: [{ nombre: 'ISFDyT N°53' }] }],
+      distritos: [
+        {
+          nombre: 'Almirante Brown',
+          institutos: [{ nombre: 'ISFD N°41' }, { nombre: 'ISFDyT N°53' }],
+        },
+      ],
     },
     {
       id: 6,
@@ -43,7 +60,10 @@ async function main() {
     },
     {
       id: 9,
-      distritos: [{ nombre: 'Moreno', institutos: [{ nombre: 'ISFD N°110' }] }],
+      distritos: [
+        { nombre: 'San Miguel', institutos: [{ nombre: 'ISFDyT N°42' }] },
+        { nombre: 'Moreno', institutos: [{ nombre: 'ISFD N°110' }] },
+      ],
     },
     {
       id: 10,
@@ -54,12 +74,26 @@ async function main() {
       distritos: [{ nombre: 'Campana', institutos: [{ nombre: 'ISFDyT N°15' }] }],
     },
     {
+      id: 12,
+      distritos: [{ nombre: 'San Pedro', institutos: [{ nombre: 'ISFD N°119' }] }],
+    },
+    {
+      id: 13,
+      distritos: [{ nombre: 'Salto', institutos: [{ nombre: 'ISFDyT N°126' }] }],
+    },
+    {
       id: 14,
-      distritos: [{ nombre: 'Junín', institutos: [{ nombre: 'ISFD N°129' }] }],
+      distritos: [
+        { nombre: 'Junín', institutos: [{ nombre: 'ISFD N°129' }, { nombre: 'ISFDyT N°20' }] },
+      ],
     },
     {
       id: 15,
       distritos: [{ nombre: 'Pehuajó', institutos: [{ nombre: 'ISFDyT N°13' }] }],
+    },
+    {
+      id: 16,
+      distritos: [{ nombre: 'Trenque Lauquen', institutos: [{ nombre: 'ISFDyT N°40' }] }],
     },
     {
       id: 17,
@@ -67,15 +101,32 @@ async function main() {
     },
     {
       id: 19,
-      distritos: [{ nombre: 'General Pueyrredón', institutos: [{ nombre: 'ISFD N°19' }] }],
+      distritos: [
+        { nombre: 'General Pueyrredón', institutos: [{ nombre: 'ISFD N°19' }] },
+        { nombre: 'Mar Chiquita', institutos: [{ nombre: 'ISFDyT N°63' }] },
+        { nombre: 'General Alvarado', institutos: [{ nombre: 'ISFDyT N°81' }] },
+      ],
     },
     {
       id: 20,
-      distritos: [{ nombre: 'Tandil', institutos: [{ nombre: 'ISFDyT N°166' }] }],
+      distritos: [
+        { nombre: 'Tandil', institutos: [{ nombre: 'ISFDyT N°10' }, { nombre: 'ISFDyT N°166' }] },
+      ],
+    },
+    {
+      id: 21,
+      distritos: [{ nombre: 'Tres Arroyos', institutos: [{ nombre: 'ISFDyT N°33' }] }],
     },
     {
       id: 22,
-      distritos: [{ nombre: 'Bahía Blanca', institutos: [{ nombre: 'ISFD N°3' }] }],
+      distritos: [
+        { nombre: 'Bahía Blanca', institutos: [{ nombre: 'ISFD N°3' }] },
+        { nombre: 'Patagones', institutos: [{ nombre: 'ISFDyT N°25' }] },
+      ],
+    },
+    {
+      id: 23,
+      distritos: [{ nombre: 'Coronel Suárez', institutos: [{ nombre: 'ISFDyT N°48' }] }],
     },
     {
       id: 24,
@@ -83,18 +134,19 @@ async function main() {
     },
     {
       id: 25,
-      distritos: [{ nombre: 'Bolívar', institutos: [{ nombre: 'ISFDyT N°27' }] }],
+      distritos: [
+        { nombre: 'Bolívar', institutos: [{ nombre: 'ISFDyT N°27' }] },
+        { nombre: 'Olavarría', institutos: [{ nombre: 'ISFD N°22' }] },
+      ],
     },
   ]
 
-  // Counters
   let creados = 0
   let saltados = 0
-  let distritosNoEncontrados: Array<{ regionId: number; nombre: string }> = []
+  const distritosNoEncontrados: Array<{ regionId: number; nombre: string }> = []
 
   for (const region of regiones) {
     for (const d of region.distritos) {
-      // Buscar el distrito por nombre dentro de la región
       const distrito = await prisma.distrito.findFirst({
         where: { nombre: d.nombre, regionId: region.id },
         select: { id: true },
@@ -106,14 +158,13 @@ async function main() {
       }
 
       for (const inst of d.institutos) {
-        // Evitar duplicados: si ya existe un Instituto con mismo nombre en ese distrito, lo salteamos
         const existente = await prisma.instituto.findFirst({
           where: { nombre: inst.nombre, distritoId: distrito.id },
           select: { id: true },
         })
 
         if (existente) {
-          saltados++
+          saltados += 1
           continue
         }
 
@@ -123,26 +174,26 @@ async function main() {
             distrito: { connect: { id: distrito.id } },
           },
         })
-        creados++
+        creados += 1
       }
     }
   }
 
-  console.log('✅ Seed Institutos completado')
-  console.log(`   • Institutos creados: ${creados}`)
-  console.log(`   • Duplicados / ya existentes: ${saltados}`)
-  if (distritosNoEncontrados.length) {
-    console.log('   • Distritos NO encontrados (revisar nombre/regionId):')
-    for (const d of distritosNoEncontrados) {
-      console.log(`     - Región ${d.regionId} / Distrito "${d.nombre}"`)
+  console.log(`Institutos creados: ${creados}`)
+  console.log(`Institutos ya existentes: ${saltados}`)
+
+  if (distritosNoEncontrados.length > 0) {
+    console.log('Distritos no encontrados:')
+    for (const distrito of distritosNoEncontrados) {
+      console.log(`- Region ${distrito.regionId} / ${distrito.nombre}`)
     }
   }
 }
 
 main()
   .then(() => prisma.$disconnect())
-  .catch(async (e) => {
-    console.error('❌ Error en seed de institutos:', e)
+  .catch(async (error) => {
+    console.error('Error en seed de institutos:', error)
     await prisma.$disconnect()
     process.exit(1)
   })

@@ -11,11 +11,20 @@ export const cursanteService = {
     return prisma.cursante.findUnique({
       where: { id },
       include: {
+        distrito: {
+          select: {
+            id: true,
+            nombre: true,
+            regionId: true,
+          },
+        },
         inscripciones: {
           select: {
             id: true,
             estado: true,
             documentacion: true,
+            dniAdjuntoUrl: true,
+            tituloAdjuntoUrl: true,
             observaciones: true,
             aula: {
               select: {
@@ -50,19 +59,32 @@ export const cursanteService = {
 
   async list({ search, page = 1, limit = 10 }: { search?: string; page?: number; limit?: number }) {
     const skip = (page - 1) * limit
-    const where: Prisma.CursanteWhereInput = search
-      ? {
-          OR: [
-            { nombre: { contains: search } },
-            { apellido: { contains: search } },
-            { dni: { contains: search } },
-            { email: { contains: search } },
-          ],
-        }
-      : {}
+    const searchTerms = (search || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+
+    const where: Prisma.CursanteWhereInput =
+      searchTerms.length > 0
+        ? {
+            AND: searchTerms.map((term) => ({
+              OR: [
+                { nombre: { contains: term } },
+                { apellido: { contains: term } },
+                { dni: { contains: term } },
+                { email: { contains: term } },
+              ],
+            })),
+          }
+        : {}
 
     const [cursantes, total] = await Promise.all([
-      prisma.cursante.findMany({ where, skip, take: limit, orderBy: { apellido: 'asc' } }),
+      prisma.cursante.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ apellido: 'asc' }, { nombre: 'asc' }],
+      }),
       prisma.cursante.count({ where }),
     ])
 
