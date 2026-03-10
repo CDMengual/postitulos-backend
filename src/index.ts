@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import helmet from 'helmet'
 import { authRoutes } from './modules/auth'
 import { userRoutes } from './modules/users'
 import { cursanteRoutes } from './modules/cursantes'
@@ -15,6 +16,7 @@ import { publicRoutes } from './modules/public'
 import { aulaRoutes } from './modules/aulas'
 import { cohorteRoutes } from './modules/cohortes'
 import { errorMiddleware, notFoundMiddleware } from './middlewares/errorMiddleware'
+import { buildCorsOptions } from './shared/http/cors'
 
 dotenv.config()
 
@@ -22,17 +24,13 @@ const app = express()
 const PORT = process.env.PORT || 4000
 
 // --- Middlewares ---
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    credentials: true, // ✅ permite cookies
-  }),
-)
-app.use(express.json())
-app.use(cookieParser()) // ✅ debe ir antes de las rutas
+app.use(helmet())
+app.use(cors(buildCorsOptions()))
+app.use(express.json({ limit: '1mb' }))
+app.use(cookieParser())
 
 // --- Rutas ---
-app.get('/', (_, res) => res.send('✅ API Postítulos funcionando'))
+app.get('/', (_, res) => res.send('API Postitulos funcionando'))
 app.use('/api/public', publicRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
@@ -50,5 +48,5 @@ app.use(errorMiddleware)
 
 // --- Servidor ---
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`)
+  console.log(`Servidor corriendo en http://localhost:${PORT}`)
 })

@@ -2,6 +2,11 @@ import { Request, Response } from 'express'
 import * as authService from './auth.service'
 import { sendSuccess, sendError } from '../../shared/http/response'
 import { authSchema } from './auth.schema'
+import {
+  AUTH_COOKIE_NAME,
+  getAuthCookieClearOptions,
+  getAuthCookieOptions,
+} from '../../shared/http/auth-cookie'
 
 export const authController = {
   async login(req: Request, res: Response) {
@@ -9,12 +14,7 @@ export const authController = {
       const input = authSchema.parseLogin((req.body || {}) as Record<string, unknown>)
       const { user, token } = await authService.login(input.email, input.password)
 
-      res.cookie('auth_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
+      res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions())
 
       return sendSuccess(res, 'Login exitoso', { user })
     } catch (err: any) {
@@ -24,7 +24,7 @@ export const authController = {
 
   async logout(_: Request, res: Response) {
     try {
-      res.clearCookie('auth_token')
+      res.clearCookie(AUTH_COOKIE_NAME, getAuthCookieClearOptions())
       return sendSuccess(res, 'Sesion cerrada correctamente')
     } catch (_err) {
       return sendError(res, 'Error al cerrar sesion')
