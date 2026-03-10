@@ -1,0 +1,5 @@
+export { default as aulaRoutes } from './aulas.routes'
+export { aulaController } from './aula.controller'
+export { aulaService } from './aula.service'
+export { aulaRepository } from './aula.repository'
+export { aulaSchema } from './aula.schema'

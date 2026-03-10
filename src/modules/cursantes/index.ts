@@ -1,0 +1,5 @@
+export { default as cursanteRoutes } from './cursante.routes'
+export { cursanteController } from './cursante.controller'
+export { cursanteService } from './cursante.service'
+export { cursanteRepository } from './cursante.repository'
+export { cursanteSchema } from './cursante.schema'

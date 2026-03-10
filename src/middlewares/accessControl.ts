@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express'
-import prisma from '../prisma/client'
+import prisma from '../infrastructure/database/prisma'
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from '../errors/app-error'
 
 export function canAccess(resource: 'aula') {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const user = req.user
-      if (!user) return res.status(401).json({ message: 'No autenticado' })
+      if (!user) return next(new UnauthorizedError('No autenticado'))
 
       switch (resource) {
         case 'aula': {
@@ -13,7 +19,7 @@ export function canAccess(resource: 'aula') {
           const aulaId = Number(aulaIdRaw)
 
           if (!aulaIdRaw || Number.isNaN(aulaId)) {
-            return res.status(400).json({ message: 'aulaId invalido' })
+            return next(new BadRequestError('aulaId invalido'))
           }
 
           const aula = await prisma.aula.findUnique({
@@ -26,33 +32,27 @@ export function canAccess(resource: 'aula') {
             },
           })
 
-          if (!aula) return res.status(404).json({ message: 'Aula no encontrada' })
+          if (!aula) return next(new NotFoundError('Aula no encontrada'))
 
           const pertenece =
-            aula.admins.some((u) => u.id === user.id) ||
-            aula.coordinadores.some((u) => u.id === user.id) ||
-            aula.referentes.some((u) => u.id === user.id) ||
-            aula.formadores.some((u) => u.id === user.id)
+            aula.admins.some((u: { id: number }) => u.id === user.id) ||
+            aula.coordinadores.some((u: { id: number }) => u.id === user.id) ||
+            aula.referentes.some((u: { id: number }) => u.id === user.id) ||
+            aula.formadores.some((u: { id: number }) => u.id === user.id)
 
           if (!pertenece && user.rol !== 'ADMIN') {
-            return res.status(403).json({ message: 'Acceso no permitido' })
+            return next(new ForbiddenError('Acceso no permitido'))
           }
 
-          break
+          return next()
         }
 
-        // 👇 En el futuro se puede  extender así:
-        // case 'cursante': { ... }
-        // case 'postitulo': { ... }
-
         default:
-          return res.status(500).json({ message: 'Tipo de recurso no soportado' })
+          return next(new BadRequestError('Tipo de recurso no soportado'))
       }
-
-      next()
     } catch (err) {
       console.error('Error en canAccess:', err)
-      res.status(500).json({ message: 'Error interno del servidor' })
+      return next(err)
     }
   }
 }

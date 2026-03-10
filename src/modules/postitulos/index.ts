@@ -1,0 +1,5 @@
+export { default as postituloRoutes } from './postitulo.routes'
+export { postituloController } from './postitulo.controller'
+export { postituloService } from './postitulo.service'
+export { postituloRepository } from './postitulo.repository'
+export { postituloSchema } from './postitulo.schema'

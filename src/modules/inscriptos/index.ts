@@ -1,0 +1,5 @@
+export { default as inscriptoRoutes } from './inscripto.routes'
+export { inscriptoController } from './inscripto.controller'
+export { inscriptoService } from './inscripto.service'
+export { inscriptoRepository } from './inscripto.repository'
+export { inscriptoSchema } from './inscripto.schema'

@@ -1,0 +1,5 @@
+export { default as institutoRoutes } from './instituto.routes'
+export { institutoController } from './instituto.controller'
+export { institutoService } from './instituto.service'
+export { institutoRepository } from './instituto.repository'
+export { institutoSchema } from './instituto.schema'

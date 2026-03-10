@@ -1,0 +1,5 @@
+export { default as cohorteRoutes } from './cohorte.routes'
+export { cohorteController } from './cohorte.controller'
+export { cohorteService } from './cohorte.service'
+export { cohorteRepository } from './cohorte.repository'
+export { cohorteSchema } from './cohorte.schema'

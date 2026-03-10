@@ -1,0 +1,5 @@
+export { default as formularioRoutes } from './formulario.routes'
+export { formularioController } from './formulario.controller'
+export { formularioService } from './formulario.service'
+export { formularioRepository } from './formulario.repository'
+export { formularioSchema } from './formulario.schema'

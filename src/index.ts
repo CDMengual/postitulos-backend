@@ -2,18 +2,19 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import authRoutes from './routes/auth.routes'
-import userRoutes from './routes/user.routes'
-import institutoRoutes from './routes/instituto.routes'
-import distritoRoutes from './routes/distrito.routes'
-import postituloRoutes from './routes/postitulo.routes'
-import aulaRoutes from './routes/aulas.routes'
-import cursanteRoutes from './routes/cursante.routes'
-import cohorteRoutes from './routes/cohorte.routes'
-import formularioRoutes from './routes/formulario.routes'
-import publicRoutes from './routes/public.routes'
-import inscriptoRoutes from './routes/inscripto.routes'
-import dashboardRoutes from './routes/dashboard.routes'
+import { authRoutes } from './modules/auth'
+import { userRoutes } from './modules/users'
+import { cursanteRoutes } from './modules/cursantes'
+import { dashboardRoutes } from './modules/dashboard'
+import { distritoRoutes } from './modules/distritos'
+import { formularioRoutes } from './modules/formularios'
+import { institutoRoutes } from './modules/institutos'
+import { inscriptoRoutes } from './modules/inscriptos'
+import { postituloRoutes } from './modules/postitulos'
+import { publicRoutes } from './modules/public'
+import { aulaRoutes } from './modules/aulas'
+import { cohorteRoutes } from './modules/cohortes'
+import { errorMiddleware, notFoundMiddleware } from './middlewares/errorMiddleware'
 
 dotenv.config()
 
@@ -44,6 +45,8 @@ app.use('/api/cohortes', cohorteRoutes)
 app.use('/api/formularios', formularioRoutes)
 app.use('/api/inscripciones', inscriptoRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use(notFoundMiddleware)
+app.use(errorMiddleware)
 
 // --- Servidor ---
 app.listen(PORT, () => {
