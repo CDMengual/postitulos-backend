@@ -1,0 +1,22 @@
+[
+  {
+    "codigo": "EI",
+    "destinatarios": "Docentes de niveles secundario, superior y modalidades de la enseñanza. Especialmente dirigido a docentes de Ciencias Sociales, Comunicación y Cultura, Formación Ciudadana, Prácticas del Lenguaje y Educación Artística; y profesores de Educación Superior de Formación General y Práctica Docente.",
+    "descripcion": "La Especialización Docente de Nivel Superior en Enseñanza con Imágenes (Res. 2642-21) propone abrir un espacio de discusión sobre las imágenes, atendiendo a sus especificidades como medio y a sus potencialidades y limitaciones para la enseñanza. Por esto, el Plan de estudios contempla la exploración de lenguajes como el cine, la fotografía, la historieta, los videojuegos y los memes.\n\nSe trata de un espacio de experimentación y reflexión conjunta, necesario ante la acelerada expansión de la digitalización de los modos de producción, circulación y consumo de imágenes. Ante este escenario, resulta central pensar el lugar de la escuela y de los y las docentes como espectadoras, transmisoras y recreadoras de la cultura de su tiempo. La formación propone, finalmente, debates acerca del lugar de las imágenes en la construcción de la memoria colectiva y en las prácticas de los y las jóvenes en la cultura visual contemporánea.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 400,
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Especialización Docente de Nivel Superior en Enseñanza con Imágenes",
+    "planEstudios": "https://drive.google.com/file/d/13JCL-vpNXsJPpJ7rvLv84Qu3jBUC2ee-",
+    "resolucionAlternativa": "https://drive.google.com/file/d/137LCCp5-fviAsYysPNwsbzKpIByMpYY2"
+  },
+  {
+    "codigo": "EA",
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Educación ambiental. Nuevas miradas y propuestas transversales para el aula",
+    "destinatarios": "Docentes de escuelas secundarias, media, técnica, adultos, especial e integrantes de equipos de conducción y orientación escolar.",
+    "descripcion": "Este trayecto de formación se propone:\n\n- Abordar debates conceptuales, pedagógicos y didácticos en torno a la educación ambiental para repensar la enseñanza de problemas ambientales y elaborar propuestas complejas, integrales y situadas.\n- Favorecer el análisis crítico de la realidad ambiental actual.\n- Problematizar la relación entre sociedad, naturaleza y cultura en tanto contenido escolar, desde la pedagogía del conflicto ambiental.\n- Diseñar propuestas de educación ambiental desde una dimensión áulica e institucional.\n\nTemáticas a abordar:\n\n- La Educación Ambiental en la escuela: hacia una didáctica de la complejidad.\n- Herramientas teórico-metodológicas para la EA en el aula.\n- La enseñanza de problemas ambientales: de problemas a “miradas” escolares sobre los problemas. Agronegocios y Residuos Sólidos Urbanos.\n- Desnaturalizando los desastres naturales.\n- Reflexionando sobre el Cambio Climático.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 410
+  }
+]

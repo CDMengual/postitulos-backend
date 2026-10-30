@@ -24,7 +24,7 @@ export type UpdateCohorteInput = Record<string, unknown>
 
 export type ParsedCreateCohorteInput = {
   anio: number
-  fechaInicio: Date
+  fechaInicio: Date | null
   fechaFin: Date | null
   fechaInicioInscripcion: Date | null
   fechaFinInscripcion: Date | null

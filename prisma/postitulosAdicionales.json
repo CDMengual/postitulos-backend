@@ -1,0 +1,62 @@
+[
+  {
+    "codigo": "EyCD",
+    "ofertaExcel": "Escuelas y cultura digital",
+    "destinatarios": "Docentes de todos los niveles y modalidades.",
+    "descripcion": "Hace ya décadas, los cambios en la infraestructura de los medios digitales y conectados ponen en tensión las formas y tradiciones de lo escolar: ¿qué podemos decir de nuevo frente a un tema que lleva años en la agenda educativa?\n\nLa Especialización Docente de Nivel Superior en Escuelas y Cultura Digital se propone sumar a este recorrido reflexiones y experimentaciones desde la perspectiva de la alfabetización digital crítica, orientadas a fortalecer la mirada transversal para la enseñanza en cada uno de los niveles y modalidades de la educación en la provincia de Buenos Aires.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 410,
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Especialización Docente de Nivel Superior en Escuelas y Cultura Digital",
+    "requisitos": {
+      "excluyentes": ["Presentar la documentacion respaldatoria que acredite el cumplimiento de los requisitos de admision.", "Poseer titulo docente."],
+      "prioritarios": ["Estar en ejercicio en el momento de la inscripcion."]
+    }
+  },
+  {
+    "codigo": "IB",
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Enseñanza de la construcción histórica, social y cultural de las identidades bonaerenses",
+    "ofertaExcel": "Enseñanza de la construcción histórica, social y cultural de las identidades bonaerenses",
+    "destinatarios": "Docentes de todas las áreas y cargos de la Educación Secundaria, Educación Media y Educación Técnico Profesional. Maestros, Preceptores, Profesores y Equipos de Conducción y Supervisión de Educación de Jóvenes y Adultos. Profesores de Educación Artística.",
+    "descripcion": "La propuesta formativa aborda el estudio de la historia y las identidades de nuestra provincia a partir de dos ejes. Por un lado, indaga en el proceso de conformación de la identidad bonaerense estudiando su pasado, su perfil territorial, la diversidad de sus entramados societales, la riqueza de su acervo cultural y algunos sucesos de su historia reciente. Y, por otro lado, propone el análisis de las temáticas abordadas en relación a las posibilidades de trabajar los contenidos en propuestas de enseñanza e investigación en la escuela secundaria.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 410,
+    "requisitos": {
+      "excluyentes": ["Presentar la documentacion respaldatoria que acredite el cumplimiento de los requisitos de admision.", "Poseer titulo docente de Educacion Secundaria y/o de la Modalidad de Jovenes y Adultos."],
+      "prioritarios": ["Docentes graduados en profesorados de disciplinas de ciencias sociales o ciencias naturales en ejercicio en escuelas de Educacion Secundaria y de Jovenes y Adultos.", "Ser integrante del equipo de conduccion en escuelas de Educacion Secundaria de Jovenes y Adultos.", "Ser inspector de la Modalidad de Educacion Secundaria de Adultos."]
+    }
+  },
+  {
+    "codigo": "JA",
+    "nombre": "Educación secundaria de jóvenes, adultos y adultos mayores",
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Educación secundaria de jóvenes, adultos y adultos mayores",
+    "ofertaExcel": "Adultos",
+    "destinatarios": "Docentes, equipos de gestión y supervisoras, supervisores del nivel secundario de la Modalidad de Educación de Jóvenes y Adultos y Adultos Mayores y en situaciones especiales, cuando haya vacantes, docentes de nivel secundario que aspiren a trabajar en la Modalidad.",
+    "descripcion": "La propuesta tiene el objetivo de ofrecer un trayecto formativo que aborde de manera integral aspectos pedagógicos, didácticos y curriculares en coherencia con el enfoque y los lineamientos de la política educativa y curricular vigente.\n\nDurante la cursada se enfatiza un enfoque práctico que supone reflexionar sobre las prácticas pedagógicas para consolidar apropiaciones teóricas y didácticas. Estas aproximaciones conceptuales son propias de la modalidad, se anclan en las experiencias áulicas y se analizan de manera situada, de acuerdo a los distintos contextos de desarrollo del rol docente.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 430
+  },
+  {
+    "codigo": "DIS",
+    "ofertaExcel": "Especialización Docente de Nivel Superior en Perspectiva de Discapacidad en el Sistema Educativo Bonaerense",
+    "destinatarios": "Equipos de conducción, supervisores y docentes de todos los niveles y modalidades.",
+    "descripcion": "Esta propuesta de formación docente busca profundizar la incorporación de la perspectiva de discapacidad en el sistema educativo bonaerense, entendida como un posicionamiento político, pedagógico y ético que cuestiona la ideología de la normalidad y sus efectos homogeneizantes. Desde un enfoque de derechos humanos, promueve una comprensión relacional, social e histórica de la discapacidad, alejándose de visiones individualistas o deficitarias.\n\nEl trayecto invita a revisar las prácticas capacitistas y reconocer a las personas con discapacidad como sujetos políticos con derecho a una participación plena en la vida escolar y social.\n\nLa Educación Especial se concibe como parte integral del sistema educativo y no como saber aislado. Se propone una mirada transversal articulada con políticas como la ESI y una perspectiva interseccional que permita comprender cómo género, clase, etnia u orientación sexual se entrecruzan con la discapacidad, habilitando prácticas pedagógicas más justas e inclusivas.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 400,
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Especialización Docente de Nivel Superior en Perspectiva de Discapacidad en el Sistema Educativo Bonaerense",
+    "planEstudios": "https://drive.google.com/file/d/1btMdf0IQ9Q2W2B_PZCqq6QQAEeg1wHmR/view"
+  },
+  {
+    "codigo": "MC",
+    "tipo": "ESPECIALIZACION",
+    "titulo": "Análisis y enseñanza del mundo contemporáneo",
+    "ofertaExcel": "Análisis y enseñanza del mundo contemporáneo",
+    "destinatarios": "Docentes de los niveles primario, secundario y superior y de las modalidades.",
+    "descripcion": "La propuesta de formación ofrece un recorrido integral para comprender y enseñar las transformaciones del mundo contemporáneo desde una perspectiva crítica, situada y transdisciplinaria. El trayecto articula dimensiones sociales, culturales, tecnológicas y políticas que atraviesan la vida escolar y el trabajo docente, y habilita herramientas para analizar el presente, recuperar memorias y construir interpretaciones que fortalezcan la tarea pedagógica en los distintos niveles del sistema educativo.\n\nA lo largo de la cursada se promueve la reflexión sobre las prácticas, el intercambio entre colegas y la apropiación de marcos conceptuales que permiten renovar la enseñanza y ampliar el campo profesional. La propuesta acompaña a las y los docentes en la elaboración de proyectos y secuencias didácticas contextualizadas, en coherencia con los lineamientos de la política educativa vigente y con el compromiso de la Provincia de Buenos Aires con una formación democrática, crítica y situada.",
+    "modalidad": "Virtual con encuentros sincrónicos",
+    "cargaHoraria": 410
+  }
+]

@@ -39,8 +39,9 @@ export const inscriptoService = {
   },
 
   async list(params: ListInscriptosParams) {
-    const { cohorteId, institutoId, estado, documentacion, search, page, limit } = params
+    const { estadoCohorte, cohorteId, institutoId, estado, documentacion, search, page, limit } = params
     const where = {
+      ...(estadoCohorte ? { cohorte: { estado: estadoCohorte } } : {}),
       ...(cohorteId ? { cohorteId } : {}),
       ...(institutoId ? { institutoId } : {}),
       ...(estado ? { estado } : {}),
@@ -48,10 +49,10 @@ export const inscriptoService = {
       ...(search
         ? {
             OR: [
-              { nombre: { contains: search } },
-              { apellido: { contains: search } },
-              { dni: { contains: search } },
-              { email: { contains: search } },
+              { nombre: { contains: search, mode: 'insensitive' as const } },
+              { apellido: { contains: search, mode: 'insensitive' as const } },
+              { dni: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
             ],
           }
         : {}),

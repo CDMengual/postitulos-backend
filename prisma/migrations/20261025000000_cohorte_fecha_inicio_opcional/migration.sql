@@ -1,0 +1,1 @@
+ALTER TABLE "Cohorte" ALTER COLUMN "fechaInicio" DROP NOT NULL;

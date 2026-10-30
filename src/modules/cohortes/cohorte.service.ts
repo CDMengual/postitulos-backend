@@ -133,7 +133,7 @@ export const cohorteService = {
         cuposTotales: cuposFinales + cuposListaEsperaFinales,
       }),
       ...(Object.prototype.hasOwnProperty.call(input, 'fechaInicio') && {
-        fechaInicio: input.fechaInicio ?? cohorteActual.fechaInicio,
+        fechaInicio: input.fechaInicio ?? null,
       }),
       ...(Object.prototype.hasOwnProperty.call(input, 'fechaFin') && {
         fechaFin: input.fechaFin ?? null,

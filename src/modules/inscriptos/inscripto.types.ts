@@ -13,6 +13,7 @@ export type UserContext = {
 }
 
 export interface ListInscriptosParams {
+  estadoCohorte?: "INSCRIPCION" | "ACTIVA" | "INACTIVA" | "FINALIZADA" | "CANCELADA"
   cohorteId?: number
   institutoId?: number
   estado?: EstadoInscripto

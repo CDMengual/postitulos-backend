@@ -1,0 +1,140 @@
+[
+  {
+    "codigo": "EI",
+    "resolucion": {
+      "referencia": "RESOC-2021-2642-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1T0lGpyhR5PAuLkkRts80i2er1xCIUgsc/view?usp=drive_link"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RESOC-2022-1916-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/18-1ZBDBcD_D1D-gNAIMw9rMyWlV7xZFg/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "10706",
+      "url": "https://drive.google.com/file/d/1dN6DYDwWjf0mysgqWzY7aL_p4Z3QZm_d/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1_Qu-QEcZ7bsQEzaKqtAeNqadz2V9-m2g/view?usp=drive_link"
+    }
+  },
+  {
+    "codigo": "EA",
+    "resolucion": {
+      "referencia": "RESOC-2021-1393-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1BQppe7rxnZvgEyI0-FosB9RWdwZkf7bi/view?usp=drive_link"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RESOC-2022-2236-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1vAIvLFBWJuES4W5DdNqFUQbiRPf6pmbh/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "10717",
+      "url": "https://drive.google.com/file/d/1SPT3887gB_Q0j0TImpbEARA2EmpfJddp/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1jshGfZRldC8rgl35-Rm_z_G2vgi-OyIh/view?usp=drive_link"
+    }
+  },
+  {
+    "codigo": "EyCD",
+    "nombre": "Escuelas y cultura digital",
+    "resolucion": {
+      "referencia": "RESOC-2021-1392-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/15rvTqkUF6IKueoOxHmsVZuyQWdSLz3ZR/view?usp=sharing"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RESOC-2022-2198-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1i9CaJFyRR4s4U9J0Xu7rj7qBhEO_3GmL/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "10699",
+      "url": "https://drive.google.com/file/d/1_e5sDuRG1N7blFWGgv08JvD7KLO37PAB/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1h1OqBV4zI_WAfH7RuD6zm5BJ1jP7Po8N/view?usp=drive_link"
+    }
+  },
+  {
+    "codigo": "IB",
+    "nombre": "Enseñanza de la construcción histórica, social y cultural de las identidades bonaerenses",
+    "resolucion": {
+      "referencia": "RESOC-2021-1526-GDEBA-DGCYE.",
+      "url": "https://drive.google.com/file/d/1BTRIHbT3O-WPEAnCyHn0BwYm2KRQVMKO/view?usp=drive_link"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RESOC-2022-2695-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1SbegLHhrFT-OS8WCLr4rVKIiMa5osRf8/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "10725",
+      "url": "https://drive.google.com/file/d/162J9kVOlSuRdesrQtLUAqiFC96aSeTYZ/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1LEA-iaWY0V_Z7elN7hou6NGPeT8S_jVp/view?usp=drive_link"
+    }
+  },
+  {
+    "codigo": "JA",
+    "nombre": "Adultos",
+    "resolucion": {
+      "referencia": "RSC-2023-41856595-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1S_-M6EH-CGT9C8t1KAlH_Y1YgPZvJUDO/view?usp=drive_link"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RSC-2024-32536433-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1n3s8oao3Jy5YdxesQt8VCMMV2XAhcIxB/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "11000",
+      "url": "https://drive.google.com/file/d/1CD1QbIua60YmzeGpJt9riuHANcYLVbtd/view?usp=drive_link"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1sKYqjF1-Y-EXUHAmNSkxsxV0CpnNfBsv/view?usp=drive_link"
+    }
+  },
+  {
+    "codigo": "DIS",
+    "nombre": "Especialización Docente de Nivel Superior en Perspectiva de Discapacidad en el Sistema Educativo Bonaerense",
+    "resolucion": {
+      "referencia": "RSC-2025-43391571-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1KShqIt-0PsTTWkEMeGcX74e8pKyijGjl/view?usp=sharing"
+    },
+    "resolucionPuntaje": {
+      "referencia": null,
+      "url": null
+    },
+    "dictamen": {
+      "referencia": "051/26",
+      "url": "https://drive.google.com/file/d/117jD2v-t_NskqbPFMEl1GPQX4AIYm690/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1btMdf0IQ9Q2W2B_PZCqq6QQAEeg1wHmR/view?usp=sharing"
+    }
+  },
+  {
+    "codigo": "MC",
+    "nombre": "Análisis y enseñanza del mundo contemporáneo",
+    "resolucion": {
+      "referencia": "RESOC-2021-2644-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1u-liruDbAz8DI3cVAixG7G9WuSAnIQ8U/view?usp=drive_link"
+    },
+    "resolucionPuntaje": {
+      "referencia": "RESOC-2022-1541-GDEBA-DGCYE",
+      "url": "https://drive.google.com/file/d/1sZPzFipEKbPEK4_dNzJNLpSUdCuJAjQb/view?usp=drive_link"
+    },
+    "dictamen": {
+      "referencia": "10718",
+      "url": "https://drive.google.com/file/d/1bPKoPHJGKvca40nx_UWdSgYYICa7fKpM/view?usp=sharing"
+    },
+    "programa": {
+      "referencia": "Programa",
+      "url": "https://drive.google.com/file/d/1T3joNc56j9-5Gb-3YtrizOk6VitGPpZE/view?usp=drive_link"
+    }
+  }
+]

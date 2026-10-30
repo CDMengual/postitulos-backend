@@ -31,6 +31,7 @@ export const inscriptoSchema = {
     return {
       page,
       limit,
+      estadoCohorte: ensureAllowed(query.estadoCohorte, "estadoCohorte", ["INSCRIPCION", "ACTIVA", "INACTIVA", "FINALIZADA", "CANCELADA"] as const),
       cohorteId: parseOptionalPositiveInt(query.cohorteId, 'cohorteId'),
       institutoId: parseOptionalPositiveInt(query.institutoId, 'institutoId'),
       estado: ensureAllowed(query.estado, 'estado', ESTADOS),

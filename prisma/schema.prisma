@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Region {
@@ -64,9 +65,13 @@ model Postitulo {
   autores           String?  @db.Text
   coordinadores     String?  @db.Text
   resolucion        String?
+  resolucionNumero  String?
   planEstudios      String?  @db.Text
+  programa          String?  @db.Text
   resolucionPuntaje String?
+  resolucionPuntajeNumero String?
   dictamen          String?
+  dictamenNumero    String?
   modalidad         String?
   cargaHoraria      Int?
   horasSincronicas  Int?
@@ -176,7 +181,7 @@ model Cohorte {
   id                     Int           @id @default(autoincrement())
   anio                   Int
   nombre                 String?
-  fechaInicio            DateTime
+  fechaInicio            DateTime?
   fechaFin               DateTime?
   estado                 EstadoCohorte @default(INACTIVA)
   fechaInicioInscripcion DateTime?

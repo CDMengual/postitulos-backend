@@ -174,6 +174,13 @@ export const storageService = {
 
   async createSignedReadUrl(path: string, expiresIn = 60 * 10) {
     const cleanPath = String(path || '').trim()
+    // Imported documents stay hosted at their original HTTP(S) location.
+    if (/^https?:\/\//i.test(cleanPath)) {
+      try {
+        const externalUrl = new URL(cleanPath)
+        return { data: { bucket: 'external', path: cleanPath, signedUrl: externalUrl.href, expiresIn: 0 } }
+      } catch { return { error: 'URL de documento invalida', code: 400 as const } }
+    }
     if (!cleanPath) {
       return { error: 'Ruta de archivo vacia', code: 400 as const }
     }

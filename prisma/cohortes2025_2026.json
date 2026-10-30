@@ -1,0 +1,90 @@
+[
+  {
+    "codigo": "EI",
+    "nombreCohorte": "EI-2025",
+    "anio": 2025,
+    "estado": "FINALIZADA",
+    "fechaInicio": "2025-03-10 00:00:00",
+    "fechaFin": "2025-11-30 23:59:59",
+    "fechaInicioInscripcion": "2025-02-01 00:00:00",
+    "fechaFinInscripcion": "2025-03-01 23:59:59",
+    "cupos": 480
+  },
+  {
+    "codigo": "EI",
+    "nombreCohorte": "EI-2026",
+    "anio": 2026,
+    "estado": "ACTIVA",
+    "fechaInicio": "2026-03-10 00:00:00",
+    "fechaFin": "2026-11-30 23:59:59",
+    "fechaInicioInscripcion": "2026-02-01 00:00:00",
+    "fechaFinInscripcion": "2026-03-01 23:59:59",
+    "cupos": 480
+  },
+  {
+    "codigo": "EyCD",
+    "nombreCohorte": "EyCD-2025",
+    "anio": 2025,
+    "estado": "FINALIZADA",
+    "fechaInicio": "2025-03-10 00:00:00",
+    "fechaFin": "2025-11-30 23:59:59",
+    "fechaInicioInscripcion": "2025-02-01 00:00:00",
+    "fechaFinInscripcion": "2025-03-01 23:59:59",
+    "cupos": 960
+  },
+  {
+    "codigo": "EyCD",
+    "nombreCohorte": "EyCD-2026",
+    "anio": 2026,
+    "estado": "ACTIVA",
+    "fechaInicio": "2026-03-10 00:00:00",
+    "fechaFin": "2026-11-30 23:59:59",
+    "fechaInicioInscripcion": "2026-02-01 00:00:00",
+    "fechaFinInscripcion": "2026-03-01 23:59:59",
+    "cupos": 960
+  },
+  {
+    "codigo": "EA",
+    "nombreCohorte": "EA-2025",
+    "anio": 2025,
+    "estado": "FINALIZADA",
+    "fechaInicio": "2025-03-10 00:00:00",
+    "fechaFin": "2025-11-30 23:59:59",
+    "fechaInicioInscripcion": "2025-02-01 00:00:00",
+    "fechaFinInscripcion": "2025-03-01 23:59:59",
+    "cupos": 480
+  },
+  {
+    "codigo": "EA",
+    "nombreCohorte": "EA-2026",
+    "anio": 2026,
+    "estado": "INSCRIPCION",
+    "fechaInicio": "2026-03-10 00:00:00",
+    "fechaFin": "2026-11-30 23:59:59",
+    "fechaInicioInscripcion": "2026-02-01 00:00:00",
+    "fechaFinInscripcion": "2026-03-15 23:59:59",
+    "cupos": 480
+  },
+  {
+    "codigo": "IB",
+    "nombreCohorte": "IB-2025",
+    "anio": 2025,
+    "estado": "FINALIZADA",
+    "fechaInicio": "2025-03-10 00:00:00",
+    "fechaFin": "2025-11-30 23:59:59",
+    "fechaInicioInscripcion": "2025-02-01 00:00:00",
+    "fechaFinInscripcion": "2025-03-01 23:59:59",
+    "cupos": 240
+  },
+  {
+    "codigo": "IB",
+    "nombreCohorte": "IB-2026",
+    "anio": 2026,
+    "estado": "ACTIVA",
+    "fechaInicio": "2026-03-10 00:00:00",
+    "fechaFin": "2026-11-30 23:59:59",
+    "fechaInicioInscripcion": "2026-02-01 00:00:00",
+    "fechaFinInscripcion": "2026-03-01 23:59:59",
+    "cupos": 240
+  }
+]

@@ -48,6 +48,23 @@ const normalizeTipos = (tipos: unknown): PostituloTipoInput[] | undefined => {
 const normalizePayload = (body: Record<string, unknown>) => {
   const payload: PostituloPayload = { ...body }
 
+  for (const field of ['resolucionNumero', 'resolucionPuntajeNumero', 'dictamenNumero']) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      payload[field] = parseOptionalTrimmedString(body[field]) || null
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'programa')) {
+    const programa = parseOptionalTrimmedString(body.programa)
+    if (programa) {
+      try {
+        if (!['https:', 'http:'].includes(new URL(programa).protocol)) throw new Error()
+      } catch {
+        throw new BadRequestError('El programa debe ser una URL HTTP o HTTPS valida')
+      }
+    }
+    payload.programa = programa || null
+  }
+
   if (Object.prototype.hasOwnProperty.call(body, 'nombre')) {
     payload.nombre = parseRequiredTrimmedString(body.nombre, 'nombre')
   }

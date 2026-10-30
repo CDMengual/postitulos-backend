@@ -1,16 +1,34 @@
 import { Request, Response } from 'express'
 import { sendError, sendSuccess } from '../../shared/http/response'
 import { storageService } from '../../shared/storage/storage.service'
+import { inscriptoImportService } from './inscripto-import.service'
 import { inscriptoService } from './inscripto.service'
 import { inscriptoSchema } from './inscripto.schema'
 
 export const inscriptoController = {
+  async previewImport(req: Request, res: Response) {
+    try {
+      const data = await inscriptoImportService.preview(req.file, req.body?.cohorteId)
+      return sendSuccess(res, 'Vista previa de importacion', data)
+    } catch (error: any) {
+      return sendError(res, error.message || 'No se pudo analizar el CSV', error.statusCode || 500)
+    }
+  },
+  async commitImport(req: Request, res: Response) {
+    try {
+      const data = await inscriptoImportService.commit(req.file, req.body?.cohorteId, req.body?.hash, req.user!.id)
+      return sendSuccess(res, 'Inscripciones importadas', data)
+    } catch (error: any) {
+      return sendError(res, error.message || 'No se pudo importar el CSV', error.statusCode || 500)
+    }
+  },
   async getAll(req: Request, res: Response) {
     try {
-      const { page, limit, cohorteId, institutoId: institutoIdQuery, estado, documentacion, search } =
+      const { page, limit, estadoCohorte, cohorteId, institutoId: institutoIdQuery, estado, documentacion, search } =
         inscriptoSchema.parseListQuery(req.query as Record<string, unknown>)
       const institutoId = await inscriptoService.resolveInstitutoFilterForUser(req.user, institutoIdQuery)
       const result = await inscriptoService.list({
+        estadoCohorte,
         cohorteId,
         institutoId,
         estado,

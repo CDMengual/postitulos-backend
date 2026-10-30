@@ -20,7 +20,7 @@ API REST para la gestion de postitulos, cohortes, aulas, cursantes, formularios 
 
 ## Descripcion
 
-Este proyecto expone una API en Express + TypeScript con Prisma ORM sobre MySQL.  
+Este proyecto expone una API en Express + TypeScript con Prisma ORM sobre PostgreSQL (Supabase).
 Incluye autenticacion por JWT almacenado en cookie `HttpOnly` y un modulo publico para consulta de cohortes en inscripcion.
 
 ## Stack tecnologico
@@ -63,7 +63,7 @@ Incluye autenticacion por JWT almacenado en cookie `HttpOnly` y un modulo public
 ## Requisitos
 
 - Node.js 18 o superior
-- MySQL 8+ (local o remoto)
+- Proyecto Supabase con PostgreSQL (o PostgreSQL local)
 - npm
 
 ## Configuracion inicial
@@ -71,18 +71,19 @@ Incluye autenticacion por JWT almacenado en cookie `HttpOnly` y un modulo public
 1. Instalar dependencias:
 
 ```bash
-npm install
+npm ci
 ```
 
 2. Crear archivo `.env` en la raiz del proyecto.
-3. Configurar base de datos MySQL (por ejemplo con MySQL Workbench).
+3. Configurar Supabase siguiendo [la guia de migracion](docs/supabase.md).
 
 ## Variables de entorno
 
 Crear `.env` con:
 
 ```env
-DATABASE_URL="mysql://USUARIO:CLAVE@localhost:3306/postitulos_db"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@HOST:5432/postgres?sslmode=require"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:PASSWORD@HOST:5432/postgres?sslmode=require"
 JWT_SECRET="SECRETO_LARGO_Y_ALEATORIO"
 PORT=4000
 CLIENT_URL="http://localhost:3000"
@@ -95,7 +96,7 @@ PUBLIC_UPLOAD_MAX_BYTES=8388608
 
 Notas:
 
-- `DATABASE_URL` es obligatoria para Prisma.
+- `DATABASE_URL` es obligatoria para Prisma; `DIRECT_URL` se usa para migraciones. Copiar las conexiones reales desde Supabase > Connect.
 - `JWT_SECRET` es obligatoria para login/verificacion de token.
 - `CLIENT_URL` se usa en CORS para permitir credenciales desde el frontend.
 - `SUPABASE_BUCKET` debe ser un bucket privado para DNI/Titulo.
@@ -107,7 +108,7 @@ Comandos recomendados:
 
 ```bash
 npm run prisma:generate
-npm run prisma:push
+npm run prisma:deploy
 ```
 
 Opcional para inspeccion de datos:
@@ -394,5 +395,5 @@ Recomendacion: ejecutar scripts manuales solo en entornos de desarrollo o despue
 - `404` en auth/login: usar `POST /api/auth/login` (con prefijo `/api`).
 - `401 No autorizado`: falta cookie `auth_token` o token expirado.
 - Cookie no viaja desde frontend: usar `credentials: 'include'` y `CLIENT_URL` correcto.
-- Error de conexion a DB: revisar `DATABASE_URL`, puerto, usuario y permisos MySQL.
-- Error Prisma por schema: ejecutar `npm run prisma:generate` y luego `npm run prisma:push`.
+- Error de conexion a DB: revisar `DATABASE_URL`, puerto, usuario y permisos PostgreSQL.
+- Error Prisma por schema: ejecutar `npm run prisma:generate` y luego `npm run prisma:deploy`.

@@ -2,7 +2,7 @@ import { PrismaClient, Prisma } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const EXCLUYENTE_COMUN =
+export const EXCLUYENTE_COMUN =
   'Presentar la documentacion respaldatoria que acredite el cumplimiento de los requisitos de admision.'
 
 type RequisitosPayload = {
@@ -10,7 +10,7 @@ type RequisitosPayload = {
   prioritarios: string[]
 }
 
-const REQUISITOS_POR_CODIGO: Record<string, RequisitosPayload> = {
+export const REQUISITOS_POR_CODIGO: Record<string, RequisitosPayload> = {
   EA: {
     excluyentes: ['Poseer titulo docente habilitante para la ensenanza en Educacion Secundaria.'],
     prioritarios: [
@@ -92,7 +92,7 @@ async function main() {
   }
 }
 
-main()
+if (require.main === module) main()
   .catch((e) => {
     console.error(e)
     process.exit(1)

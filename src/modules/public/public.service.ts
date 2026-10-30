@@ -295,7 +295,7 @@ export const publicService = {
       try {
         return await prisma.$transaction(
           async (tx: any) => {
-            await tx.$queryRaw`SELECT id FROM Cohorte WHERE id = ${data.cohorteId} FOR UPDATE`
+            await tx.$queryRaw`SELECT id FROM "Cohorte" WHERE id = ${data.cohorteId} FOR UPDATE`
 
             const cohorteResult = await this.validateCohorteDisponibleParaInscripcion(
               data.cohorteId,

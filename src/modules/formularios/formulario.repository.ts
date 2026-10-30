@@ -10,6 +10,13 @@ const formularioInclude = {
       descripcion: true,
       destinatarios: true,
       resolucion: true,
+      resolucionNumero: true,
+      resolucionPuntaje: true,
+      resolucionPuntajeNumero: true,
+      dictamen: true,
+      dictamenNumero: true,
+      programa: true,
+      planEstudios: true,
       tipos: {
         select: {
           id: true,

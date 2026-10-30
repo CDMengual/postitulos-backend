@@ -3,6 +3,7 @@ import {
   parseOptionalDate,
   parseOptionalTrimmedString,
   parseRequiredPositiveInt,
+  parseRequiredNonNegativeInt,
 } from '../../shared/validation/common'
 import { BadRequestError } from '../../errors/app-error'
 import { CohorteEstado } from './cohorte.types'
@@ -40,7 +41,7 @@ export const cohorteSchema = {
 
     return {
       anio: parseRequiredPositiveInt(body.anio, 'anio'),
-      fechaInicio: this.parseRequiredDate(body.fechaInicio, 'fechaInicio'),
+      fechaInicio: parseOptionalDate(body.fechaInicio, 'fechaInicio') ?? null,
       fechaFin: parseOptionalDate(body.fechaFin, 'fechaFin') ?? null,
       fechaInicioInscripcion:
         parseOptionalDate(body.fechaInicioInscripcion, 'fechaInicioInscripcion') ?? null,
@@ -52,7 +53,7 @@ export const cohorteSchema = {
           ? null
           : parseRequiredPositiveInt(body.cantidadAulas, 'cantidadAulas'),
       cupos: parseRequiredPositiveInt(body.cupos, 'cupos'),
-      cuposListaEspera: parseRequiredPositiveInt(body.cuposListaEspera, 'cuposListaEspera'),
+      cuposListaEspera: parseRequiredNonNegativeInt(body.cuposListaEspera, 'cuposListaEspera'),
       institutoIds,
       formularioId:
         body.formularioId === undefined || body.formularioId === null || String(body.formularioId).trim() === ''
@@ -71,10 +72,7 @@ export const cohorteSchema = {
         anio: parseRequiredPositiveInt(body.anio, 'anio'),
       }),
       ...(Object.prototype.hasOwnProperty.call(body, 'fechaInicio') && {
-        fechaInicio:
-          body.fechaInicio === null || String(body.fechaInicio).trim() === ''
-            ? null
-            : this.parseRequiredDate(body.fechaInicio, 'fechaInicio'),
+        fechaInicio: parseOptionalDate(body.fechaInicio, 'fechaInicio') ?? null,
       }),
       ...(Object.prototype.hasOwnProperty.call(body, 'fechaFin') && {
         fechaFin: parseOptionalDate(body.fechaFin, 'fechaFin') ?? null,
@@ -100,7 +98,7 @@ export const cohorteSchema = {
         cupos: parseRequiredPositiveInt(body.cupos, 'cupos'),
       }),
       ...(Object.prototype.hasOwnProperty.call(body, 'cuposListaEspera') && {
-        cuposListaEspera: parseRequiredPositiveInt(body.cuposListaEspera, 'cuposListaEspera'),
+        cuposListaEspera: parseRequiredNonNegativeInt(body.cuposListaEspera, 'cuposListaEspera'),
       }),
       ...(Object.prototype.hasOwnProperty.call(body, 'institutoIds') && {
         institutoIds: this.parseInstitutoIds(body.institutoIds) ?? [],
@@ -112,15 +110,6 @@ export const cohorteSchema = {
             : parseRequiredPositiveInt(body.formularioId, 'formularioId'),
       }),
     }
-  },
-
-  parseRequiredDate(value: unknown, field: string) {
-    const parsed = parseOptionalDate(value, field)
-    if (!parsed) {
-      throw new BadRequestError(`El campo ${field} es obligatorio`)
-    }
-
-    return parsed
   },
 
   parseInstitutoIds(value: unknown) {

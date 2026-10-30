@@ -6,6 +6,26 @@ export type PublicDbClient = {
   inscripto: typeof prisma.inscripto
 }
 
+const publicPostituloSelect = {
+  id: true,
+  nombre: true,
+  codigo: true,
+  descripcion: true,
+  modalidad: true,
+  cargaHoraria: true,
+  requisitos: true,
+  destinatarios: true,
+  planEstudios: true,
+  programa: true,
+  resolucion: true,
+  resolucionNumero: true,
+  resolucionPuntaje: true,
+  resolucionPuntajeNumero: true,
+  dictamen: true,
+  dictamenNumero: true,
+  tipos: { select: { id: true, tipo: true, titulo: true } },
+} satisfies Prisma.PostituloSelect
+
 export const publicRepository = {
   findCohortesEnInscripcion() {
     return prisma.cohorte.findMany({
@@ -23,15 +43,7 @@ export const publicRepository = {
           select: { estado: true },
           where: { estado: { not: 'RECHAZADA' } },
         },
-        postitulo: {
-          select: {
-            id: true,
-            nombre: true,
-            codigo: true,
-            requisitos: true,
-            destinatarios: true,
-          },
-        },
+        postitulo: { select: publicPostituloSelect },
         formulario: {
           select: { id: true, nombre: true, campos: true },
         },
@@ -49,20 +61,7 @@ export const publicRepository = {
         anio: true,
         fechaInicioInscripcion: true,
         fechaFinInscripcion: true,
-        postitulo: {
-          select: {
-            id: true,
-            nombre: true,
-            codigo: true,
-            requisitos: true,
-            destinatarios: true,
-            planEstudios: true,
-            resolucion: true,
-            tipos: {
-              select: { id: true, tipo: true, titulo: true },
-            },
-          },
-        },
+        postitulo: { select: publicPostituloSelect },
         formulario: {
           select: { id: true, nombre: true, campos: true },
         },

@@ -1,5 +1,16 @@
 import { BadRequestError, UnauthorizedError } from '../../errors/app-error'
 
+export const parseRequiredNonNegativeInt = (value: unknown, field: string) => {
+  if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '') {
+    throw new BadRequestError(`${field} invalido`)
+  }
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new BadRequestError(`${field} invalido`)
+  }
+  return parsed
+}
+
 export const parseRequiredPositiveInt = (value: unknown, field: string) => {
   const parsed = Number(value)
   if (!Number.isInteger(parsed) || parsed <= 0) {

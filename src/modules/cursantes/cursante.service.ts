@@ -89,10 +89,10 @@ export const cursanteService = {
         ? {
             AND: searchTerms.map((term) => ({
               OR: [
-                { nombre: { contains: term } },
-                { apellido: { contains: term } },
-                { dni: { contains: term } },
-                { email: { contains: term } },
+                { nombre: { contains: term, mode: 'insensitive' as const } },
+                { apellido: { contains: term, mode: 'insensitive' as const } },
+                { dni: { contains: term, mode: 'insensitive' as const } },
+                { email: { contains: term, mode: 'insensitive' as const } },
               ],
             })),
           }

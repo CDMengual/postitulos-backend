@@ -10,6 +10,10 @@ export type PostituloPayload = Record<string, unknown> & {
   codigo?: unknown
   requisitos?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput | null
   resolucion?: unknown
+  resolucionNumero?: unknown
+  resolucionPuntajeNumero?: unknown
+  dictamenNumero?: unknown
+  programa?: unknown
   coordinadores?: unknown
   autores?: unknown
   descripcion?: unknown
